@@ -1,4 +1,4 @@
-import {DominoGame, ROW_SPACING, BRICK_SPACING, BRICK_HEIGHT, BRICK_WIDTH, BRICK_THICKNESS} from './domino-engine.mjs?v=20261107-rows';
+import {DominoGame, ROW_SPACING, BRICK_SPACING, BRICK_HEIGHT, BRICK_WIDTH, BRICK_THICKNESS} from './domino-engine.mjs?v=20261107-audio';
 import {SCENES} from './scenes.mjs';
 import {repairPose,squatVertices,seatedVertices} from './repair-motion.mjs';
 
@@ -222,7 +222,9 @@ async function say(text) {
   finally {if(ticket===voiceGeneration && (!speechAudio || speechAudio.paused)) voiceBusy=false;}
 }
 async function enableSound() {
-  audioContext ||= new AudioContext();await audioContext.resume();
+  audioContext ||= new AudioContext();
+  // Some browsers never settle resume() without a real user gesture; do not block chat on it.
+  await Promise.race([audioContext.resume(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('声音未就绪')),2000))]);
   soundOn=true;$('game-sound').textContent='声音已开启';audioOwnership.postMessage(audioPageId);
 }
 $('game-sound').onclick=async()=>{
