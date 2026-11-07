@@ -1,0 +1,8 @@
+{
+  "tool": "built-in imagegen",
+  "mode": "generate",
+  "transparent_background": true,
+  "file": "rest-stool.png",
+  "source": "exec-a0f67921-a4ee-444e-a588-758c0ea6b165.png",
+  "prompt": "Use case: stylized-concept. Asset type: transparent pixel-art game prop for a cozy Japanese anime seaside courtyard livestream. Primary request: ONE small low wooden sitting stool (小板凳), empty, no backrest, no armrests. Four short sturdy warm honey wooden legs, a simple pale cream wood rectangular seat with softly worn peach edge, two subtle cross braces. Front facing three-quarter view, camera slightly above the seat so we can see its TOP surface; symmetrical front edge nearly horizontal, legs reaching the same level, realistic grounded proportion. Match handcrafted 1990s Japanese RPG pixel-art environment: deliberate square pixels, crisp stepped outlines, restrained wood highlights, no smooth 3D or vector illustration. Stool centered, isolated, entire object fully visible, fills about 75 percent of square canvas width and 65 percent height. Genuine transparent background, no scenery, no character, no phone, no text, no watermark, no blue fabric, no lounging chair, no cast shadow (game renders shadow)."
+}

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>大肥鱼 · 本地试播</title>
+  <link rel="stylesheet" href="/style.css">
+  <script defer src="/vendor/live2dcubismcore.min.js"></script>
+  <script defer src="/vendor/pixi.min.js"></script>
+  <script defer src="/vendor/cubism4.min.js"></script>
+  <script defer src="/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="identity"><span class="fish-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 17c0-7 5-11 12-11 6 0 11 5 11 11v7l-5-3c-2 3-6 5-10 4-5-1-8-4-8-8Z"/><circle cx="20" cy="14" r="1.4"/><path d="m5 20-4 2 1-6"/></svg></span><h1>大肥鱼<span>本地试播</span></h1></div>
+    <div class="top-actions"><a href="/bricks.html">试玩扶砖</a><span class="connection" id="connection">正在连接</span><button id="sound" class="secondary">开启声音</button><button id="stop" class="stop">停止说话</button></div>
+  </header>
+  <main class="workspace">
+    <section class="preview" aria-label="角色预览">
+      <div class="stage" id="stage">
+        <div class="stage-label"><span class="dot"></span>本地预览 · 尚未开播</div>
+        <canvas id="character" aria-label="大肥鱼 Live2D 角色"></canvas>
+        <div class="thought" id="thought" hidden>本鱼想一想…</div>
+        <div class="stage-empty" id="model-loading">大肥鱼正在游过来…</div>
+        <div class="caption-wrap"><p id="caption" class="caption" hidden></p></div>
+        <div class="credit">模型 © Mao绒绒家园 · 非商业本地预览</div>
+        <button id="stage-sound" class="stage-sound">点击开启声音</button>
+      </div>
+      <div class="preview-footer"><span id="performance">角色加载中</span><span id="voice-label">中文配音 · 自动选择可用声音</span></div>
+    </section>
+    <aside class="control-panel">
+      <section class="conversation">
+        <div class="section-heading"><h2>和本鱼聊聊</h2><span class="tag">手动输入</span></div>
+        <p class="description">发一句话，看看她怎么回答。</p>
+        <div class="suggestions"><button data-prompt="你好，介绍一下你自己吧">认识一下</button><button data-prompt="我今天有点累，安慰我一下">安慰我一下</button><button data-prompt="给我讲一个关于小鱼的笑话">讲个小笑话</button></div>
+        <div id="messages" class="messages" role="log" aria-live="polite"><div class="empty-message"><p>海底来了一位新朋友。</p><span>从上面挑个话题，或在下面输入。</span></div></div>
+        <form id="chat-form"><label class="sr-only" for="message">你想说的话</label><textarea id="message" rows="3" maxlength="400" placeholder="大肥鱼，今天过得怎么样？"></textarea><div class="composer-footer"><label class="read-mode"><input id="read-mode" type="checkbox">只朗读这句话</label><button class="primary" id="send" type="submit">发送给本鱼 <span aria-hidden="true">↗</span></button></div></form>
+        <p id="feedback" class="feedback" role="status">首次使用请先开启声音。</p>
+      </section>
+      <section class="settings"><div class="section-heading"><h2>运行状态</h2><button id="refresh" class="text-button">刷新</button></div><dl><div><dt>对话模型</dt><dd id="model-status">检查中</dd></div><div><dt>抖音弹幕</dt><dd>未接入</dd></div><div><dt>语音与口型</dt><dd id="audio-status">等待开启声音</dd></div></dl>
+        <details><summary>配置 DeepSeek</summary><form id="settings-form"><label for="provider">对话来源</label><select id="provider"><option value="local">本地 Qwen · 无需 Key</option><option value="deepseek">DeepSeek API</option></select><label for="api-key">API Key</label><input id="api-key" type="password" autocomplete="off" placeholder="仅保存在本机，不发送到聊天"><label for="model-id">模型名称</label><input id="model-id" value="deepseek-flash"><button class="secondary" type="submit">保存配置</button><p class="settings-note">本地模型用于快速体验，回答能力有限。切换到 DeepSeek 后，输入内容会发送至其 API。在线配音使用 Edge 语音，不可用时切换 Mac 系统声音。</p></form></details>
+      </section>
+      <footer class="panel-footer">参考 dafeiyu-ai-vtuber · Mac 本地适配<br><a href="/stage" target="_blank" rel="noopener">打开纯净场景</a><span>适用于后续 OBS 浏览器来源</span></footer>
+    </aside>
+  </main>
+</body>
+</html>

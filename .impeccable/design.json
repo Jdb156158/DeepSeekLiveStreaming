@@ -1,0 +1,558 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-06T08:52:23.606827+00:00",
+  "title": "Design System: 大肥鱼",
+  "extensions": {
+    "colorMeta": {
+      "garden-ink": {
+        "role": "neutral",
+        "displayName": "Garden Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0077 129.26)",
+          "oklch(27% 0.0185 129.26)",
+          "oklch(39% 0.0262 129.26)",
+          "oklch(51% 0.0308 129.26)",
+          "oklch(63% 0.0308 129.26)",
+          "oklch(75% 0.0246 129.26)",
+          "oklch(87% 0.0139 129.26)",
+          "oklch(95% 0.0055 129.26)"
+        ]
+      },
+      "garden-muted": {
+        "role": "neutral",
+        "displayName": "Garden Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0088 127.46)",
+          "oklch(27% 0.0212 127.46)",
+          "oklch(39% 0.0300 127.46)",
+          "oklch(51% 0.0353 127.46)",
+          "oklch(63% 0.0353 127.46)",
+          "oklch(75% 0.0283 127.46)",
+          "oklch(87% 0.0159 127.46)",
+          "oklch(95% 0.0064 127.46)"
+        ]
+      },
+      "garden-line": {
+        "role": "neutral",
+        "displayName": "Garden Line",
+        "tonalRamp": [
+          "oklch(15% 0.0054 115.44)",
+          "oklch(27% 0.0129 115.44)",
+          "oklch(39% 0.0183 115.44)",
+          "oklch(51% 0.0215 115.44)",
+          "oklch(63% 0.0215 115.44)",
+          "oklch(75% 0.0172 115.44)",
+          "oklch(87% 0.0097 115.44)",
+          "oklch(95% 0.0039 115.44)"
+        ]
+      },
+      "garden-paper": {
+        "role": "neutral",
+        "displayName": "Garden Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0024 93.57)",
+          "oklch(27% 0.0057 93.57)",
+          "oklch(39% 0.0080 93.57)",
+          "oklch(51% 0.0095 93.57)",
+          "oklch(63% 0.0095 93.57)",
+          "oklch(75% 0.0076 93.57)",
+          "oklch(87% 0.0043 93.57)",
+          "oklch(95% 0.0017 93.57)"
+        ]
+      },
+      "garden-surface": {
+        "role": "neutral",
+        "displayName": "Garden Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0040 118.12)",
+          "oklch(27% 0.0097 118.12)",
+          "oklch(39% 0.0137 118.12)",
+          "oklch(51% 0.0162 118.12)",
+          "oklch(63% 0.0162 118.12)",
+          "oklch(75% 0.0129 118.12)",
+          "oklch(87% 0.0073 118.12)",
+          "oklch(95% 0.0029 118.12)"
+        ]
+      },
+      "garden-accent": {
+        "role": "primary",
+        "displayName": "Garden Accent",
+        "tonalRamp": [
+          "oklch(15% 0.0330 35.08)",
+          "oklch(27% 0.0791 35.08)",
+          "oklch(39% 0.1121 35.08)",
+          "oklch(51% 0.1319 35.08)",
+          "oklch(63% 0.1319 35.08)",
+          "oklch(75% 0.1055 35.08)",
+          "oklch(87% 0.0593 35.08)",
+          "oklch(95% 0.0237 35.08)"
+        ]
+      },
+      "garden-accent-dark": {
+        "role": "primary",
+        "displayName": "Garden Accent Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0282 34.06)",
+          "oklch(27% 0.0677 34.06)",
+          "oklch(39% 0.0958 34.06)",
+          "oklch(51% 0.1128 34.06)",
+          "oklch(63% 0.1128 34.06)",
+          "oklch(75% 0.0902 34.06)",
+          "oklch(87% 0.0507 34.06)",
+          "oklch(95% 0.0203 34.06)"
+        ]
+      },
+      "garden-secondary": {
+        "role": "secondary",
+        "displayName": "Garden Secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0059 125.20)",
+          "oklch(27% 0.0143 125.20)",
+          "oklch(39% 0.0202 125.20)",
+          "oklch(51% 0.0238 125.20)",
+          "oklch(63% 0.0238 125.20)",
+          "oklch(75% 0.0190 125.20)",
+          "oklch(87% 0.0107 125.20)",
+          "oklch(95% 0.0043 125.20)"
+        ]
+      },
+      "garden-secondary-hover": {
+        "role": "secondary",
+        "displayName": "Garden Secondary Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0096 126.76)",
+          "oklch(27% 0.0230 126.76)",
+          "oklch(39% 0.0326 126.76)",
+          "oklch(51% 0.0383 126.76)",
+          "oklch(63% 0.0383 126.76)",
+          "oklch(75% 0.0306 126.76)",
+          "oklch(87% 0.0172 126.76)",
+          "oklch(95% 0.0069 126.76)"
+        ]
+      },
+      "garden-focus": {
+        "role": "neutral",
+        "displayName": "Garden Focus",
+        "tonalRamp": [
+          "oklch(15% 0.0240 42.63)",
+          "oklch(27% 0.0576 42.63)",
+          "oklch(39% 0.0817 42.63)",
+          "oklch(51% 0.0961 42.63)",
+          "oklch(63% 0.0961 42.63)",
+          "oklch(75% 0.0768 42.63)",
+          "oklch(87% 0.0432 42.63)",
+          "oklch(95% 0.0173 42.63)"
+        ]
+      },
+      "garden-title": {
+        "role": "neutral",
+        "displayName": "Garden Title",
+        "tonalRamp": [
+          "oklch(15% 0.0118 234.90)",
+          "oklch(27% 0.0284 234.90)",
+          "oklch(39% 0.0402 234.90)",
+          "oklch(51% 0.0473 234.90)",
+          "oklch(63% 0.0473 234.90)",
+          "oklch(75% 0.0378 234.90)",
+          "oklch(87% 0.0213 234.90)",
+          "oklch(95% 0.0085 234.90)"
+        ]
+      },
+      "lane-coral": {
+        "role": "secondary",
+        "displayName": "Lane Coral",
+        "tonalRamp": [
+          "oklch(15% 0.0288 34.37)",
+          "oklch(27% 0.0691 34.37)",
+          "oklch(39% 0.0979 34.37)",
+          "oklch(51% 0.1152 34.37)",
+          "oklch(63% 0.1152 34.37)",
+          "oklch(75% 0.0921 34.37)",
+          "oklch(87% 0.0518 34.37)",
+          "oklch(95% 0.0207 34.37)"
+        ]
+      },
+      "lane-gold": {
+        "role": "secondary",
+        "displayName": "Lane Gold",
+        "tonalRamp": [
+          "oklch(15% 0.0296 85.13)",
+          "oklch(27% 0.0710 85.13)",
+          "oklch(39% 0.1006 85.13)",
+          "oklch(51% 0.1184 85.13)",
+          "oklch(63% 0.1184 85.13)",
+          "oklch(75% 0.0947 85.13)",
+          "oklch(87% 0.0533 85.13)",
+          "oklch(95% 0.0213 85.13)"
+        ]
+      },
+      "lane-sage": {
+        "role": "secondary",
+        "displayName": "Lane Sage",
+        "tonalRamp": [
+          "oklch(15% 0.0168 164.31)",
+          "oklch(27% 0.0404 164.31)",
+          "oklch(39% 0.0573 164.31)",
+          "oklch(51% 0.0674 164.31)",
+          "oklch(63% 0.0674 164.31)",
+          "oklch(75% 0.0539 164.31)",
+          "oklch(87% 0.0303 164.31)",
+          "oklch(95% 0.0121 164.31)"
+        ]
+      },
+      "lane-blue": {
+        "role": "secondary",
+        "displayName": "Lane Blue",
+        "tonalRamp": [
+          "oklch(15% 0.0142 241.14)",
+          "oklch(27% 0.0341 241.14)",
+          "oklch(39% 0.0484 241.14)",
+          "oklch(51% 0.0569 241.14)",
+          "oklch(63% 0.0569 241.14)",
+          "oklch(75% 0.0455 241.14)",
+          "oklch(87% 0.0256 241.14)",
+          "oklch(95% 0.0102 241.14)"
+        ]
+      },
+      "lane-lilac": {
+        "role": "secondary",
+        "displayName": "Lane Lilac",
+        "tonalRamp": [
+          "oklch(15% 0.0164 304.49)",
+          "oklch(27% 0.0394 304.49)",
+          "oklch(39% 0.0558 304.49)",
+          "oklch(51% 0.0656 304.49)",
+          "oklch(63% 0.0656 304.49)",
+          "oklch(75% 0.0525 304.49)",
+          "oklch(87% 0.0295 304.49)",
+          "oklch(95% 0.0118 304.49)"
+        ]
+      },
+      "lane-pink": {
+        "role": "secondary",
+        "displayName": "Lane Pink",
+        "tonalRamp": [
+          "oklch(15% 0.0203 1.22)",
+          "oklch(27% 0.0486 1.22)",
+          "oklch(39% 0.0689 1.22)",
+          "oklch(51% 0.0811 1.22)",
+          "oklch(63% 0.0811 1.22)",
+          "oklch(75% 0.0649 1.22)",
+          "oklch(87% 0.0365 1.22)",
+          "oklch(95% 0.0146 1.22)"
+        ]
+      },
+      "chat-ink": {
+        "role": "neutral",
+        "displayName": "Chat Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0121 231.22)",
+          "oklch(27% 0.0291 231.22)",
+          "oklch(39% 0.0412 231.22)",
+          "oklch(51% 0.0485 231.22)",
+          "oklch(63% 0.0485 231.22)",
+          "oklch(75% 0.0388 231.22)",
+          "oklch(87% 0.0218 231.22)",
+          "oklch(95% 0.0087 231.22)"
+        ]
+      },
+      "chat-muted": {
+        "role": "neutral",
+        "displayName": "Chat Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0094 229.04)",
+          "oklch(27% 0.0226 229.04)",
+          "oklch(39% 0.0321 229.04)",
+          "oklch(51% 0.0377 229.04)",
+          "oklch(63% 0.0377 229.04)",
+          "oklch(75% 0.0302 229.04)",
+          "oklch(87% 0.0170 229.04)",
+          "oklch(95% 0.0068 229.04)"
+        ]
+      },
+      "chat-line": {
+        "role": "neutral",
+        "displayName": "Chat Line",
+        "tonalRamp": [
+          "oklch(15% 0.0031 215.83)",
+          "oklch(27% 0.0075 215.83)",
+          "oklch(39% 0.0106 215.83)",
+          "oklch(51% 0.0125 215.83)",
+          "oklch(63% 0.0125 215.83)",
+          "oklch(75% 0.0100 215.83)",
+          "oklch(87% 0.0056 215.83)",
+          "oklch(95% 0.0023 215.83)"
+        ]
+      },
+      "chat-paper": {
+        "role": "neutral",
+        "displayName": "Chat Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(27% 0.0000 89.88)",
+          "oklch(39% 0.0000 89.88)",
+          "oklch(51% 0.0000 89.88)",
+          "oklch(63% 0.0000 89.88)",
+          "oklch(75% 0.0000 89.88)",
+          "oklch(87% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "chat-surface": {
+        "role": "neutral",
+        "displayName": "Chat Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0013 197.07)",
+          "oklch(27% 0.0032 197.07)",
+          "oklch(39% 0.0045 197.07)",
+          "oklch(51% 0.0053 197.07)",
+          "oklch(63% 0.0053 197.07)",
+          "oklch(75% 0.0043 197.07)",
+          "oklch(87% 0.0024 197.07)",
+          "oklch(95% 0.0010 197.07)"
+        ]
+      },
+      "chat-accent": {
+        "role": "primary",
+        "displayName": "Chat Accent",
+        "tonalRamp": [
+          "oklch(15% 0.0227 208.80)",
+          "oklch(27% 0.0546 208.80)",
+          "oklch(39% 0.0773 208.80)",
+          "oklch(51% 0.0910 208.80)",
+          "oklch(63% 0.0910 208.80)",
+          "oklch(75% 0.0728 208.80)",
+          "oklch(87% 0.0409 208.80)",
+          "oklch(95% 0.0164 208.80)"
+        ]
+      },
+      "chat-accent-dark": {
+        "role": "primary",
+        "displayName": "Chat Accent Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0191 208.50)",
+          "oklch(27% 0.0458 208.50)",
+          "oklch(39% 0.0649 208.50)",
+          "oklch(51% 0.0763 208.50)",
+          "oklch(63% 0.0763 208.50)",
+          "oklch(75% 0.0610 208.50)",
+          "oklch(87% 0.0343 208.50)",
+          "oklch(95% 0.0137 208.50)"
+        ]
+      },
+      "chat-danger": {
+        "role": "neutral",
+        "displayName": "Chat Danger",
+        "tonalRamp": [
+          "oklch(15% 0.0380 15.87)",
+          "oklch(27% 0.0911 15.87)",
+          "oklch(39% 0.1291 15.87)",
+          "oklch(51% 0.1519 15.87)",
+          "oklch(63% 0.1519 15.87)",
+          "oklch(75% 0.1215 15.87)",
+          "oklch(87% 0.0684 15.87)",
+          "oklch(95% 0.0273 15.87)"
+        ]
+      },
+      "chat-focus": {
+        "role": "neutral",
+        "displayName": "Chat Focus",
+        "tonalRamp": [
+          "oklch(15% 0.0271 209.98)",
+          "oklch(27% 0.0652 209.98)",
+          "oklch(39% 0.0923 209.98)",
+          "oklch(51% 0.1086 209.98)",
+          "oklch(63% 0.1086 209.98)",
+          "oklch(75% 0.0869 209.98)",
+          "oklch(87% 0.0489 209.98)",
+          "oklch(95% 0.0195 209.98)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "displayName": "系统正文",
+        "purpose": "说明、状态与表单。"
+      },
+      "garden-display": {
+        "displayName": "小院展示标题",
+        "purpose": "插画上方的短标题。"
+      },
+      "garden-title": {
+        "displayName": "小院功能标题",
+        "purpose": "操作与日记区标题。"
+      },
+      "chat-title": {
+        "displayName": "聊天功能标题",
+        "purpose": "原海底聊天页的功能分区。"
+      }
+    },
+    "shadows": [
+      {
+        "name": "garden-preview",
+        "value": "0 7px 26px #545c3d0d",
+        "purpose": "画面外框与页面分离。"
+      },
+      {
+        "name": "garden-panel",
+        "value": "0 6px 22px #545c3d0a",
+        "purpose": "操作面板轻阴影。"
+      },
+      {
+        "name": "garden-lane-inset",
+        "value": "inset 0 -3px 0 #e7dfcc",
+        "purpose": "号码按钮压边。"
+      }
+    ],
+    "motion": [
+      {
+        "name": "button-transition",
+        "value": "background .16s, color .16s",
+        "purpose": "通用按钮颜色响应。"
+      },
+      {
+        "name": "lane-transition",
+        "value": "background .15s, transform .15s",
+        "purpose": "号码按钮悬停上移 2px；减少动态效果时取消。"
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "garden-wide-min",
+        "value": "1450px"
+      },
+      {
+        "name": "garden-compact-max",
+        "value": "1020px"
+      },
+      {
+        "name": "garden-stack-max",
+        "value": "760px"
+      },
+      {
+        "name": "chat-wide-min",
+        "value": "1600px"
+      },
+      {
+        "name": "chat-compact-max",
+        "value": "900px"
+      },
+      {
+        "name": "chat-stack-max",
+        "value": "680px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "小院主操作",
+      "kind": "button",
+      "description": "珊瑚色提交操作。",
+      "html": "<button class=\"ds-garden-primary\">推一下</button>",
+      "css": ".ds-garden-primary{font:550 14px -apple-system,BlinkMacSystemFont,\"PingFang SC\",sans-serif;background:#b5543c;color:#fffef7;padding:11px 14px;border:0;border-radius:11px;cursor:pointer;transition:background .16s,color .16s}.ds-garden-primary:hover{background:#91412f}.ds-garden-primary:focus-visible{outline:3px solid #9a583d;outline-offset:3px}",
+      "refersTo": "garden-button-primary"
+    },
+    {
+      "name": "小院次操作",
+      "kind": "button",
+      "description": "声音、暂停与重置。",
+      "html": "<button class=\"ds-garden-secondary\">暂停</button>",
+      "css": ".ds-garden-secondary{font:550 14px -apple-system,BlinkMacSystemFont,\"PingFang SC\",sans-serif;background:#e6eddc;color:#506449;padding:10px 15px;border:0;border-radius:11px;cursor:pointer;transition:background .16s,color .16s}.ds-garden-secondary:hover{background:#d8e4c9}.ds-garden-secondary:focus-visible{outline:3px solid #9a583d;outline-offset:3px}",
+      "refersTo": "garden-button-secondary"
+    },
+    {
+      "name": "小院命令输入",
+      "kind": "input",
+      "description": "和提交按钮并排的单行命令框。",
+      "html": "<div class=\"ds-command\"><input aria-label=\"模拟弹幕\" placeholder=\"想推几号呀？\"></div>",
+      "css": ".ds-command{display:flex;gap:8px}.ds-command input{width:0;min-width:0;flex:1;font:14px -apple-system,BlinkMacSystemFont,\"PingFang SC\",sans-serif;color:#4e5745;background:#fffefa;border:1px solid #d5d7c3;border-radius:10px;padding:11px 10px;caret-color:#b5543c}.ds-command input::placeholder{color:#737864}.ds-command input:focus-visible{outline:3px solid #9a583d;outline-offset:3px}",
+      "refersTo": "garden-command-field"
+    },
+    {
+      "name": "六排号码按钮",
+      "kind": "button",
+      "description": "号码、颜色、动作和状态共同识别砖排。",
+      "html": "<button class=\"ds-lane\"><span class=\"ds-number\">1</span><span class=\"ds-label\">1号倒<small>已就位</small></span></button>",
+      "css": ".ds-lane{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:88px;padding:10px 5px;background:#f5f2e7;box-shadow:inset 0 -3px 0 #e7dfcc;border:0;border-radius:13px;color:#4d5847;cursor:pointer;transition:background .15s,transform .15s}.ds-lane:hover{background:#eee8d7;transform:translateY(-2px)}.ds-lane:disabled{opacity:1;cursor:default;background:#efeee5;box-shadow:inset 0 -2px 0 #e4e3d7;transform:none}.ds-number{display:flex;align-items:center;justify-content:center;width:31px;height:34px;border-radius:7px;background:#ef947e;color:#443e38;font:400 23px \"Garden Happy\",sans-serif;box-shadow:inset -3px -3px 0 #0000000c,inset 2px 2px 0 #ffffff55}.ds-label{font:550 12px -apple-system,\"PingFang SC\",sans-serif;text-align:center}.ds-label small{display:block;white-space:nowrap;margin-top:3px;font-size:11px;font-weight:400;line-height:1.3;color:#68725e}.ds-lane:focus-visible{outline:3px solid #9a583d;outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-lane{transition:none}.ds-lane:hover{transform:none}}"
+    },
+    {
+      "name": "小院状态标签",
+      "kind": "chip",
+      "description": "显示参与方式或真实工作阶段。",
+      "html": "<span class=\"ds-tag\">待命中</span>",
+      "css": ".ds-tag{display:inline-block;background:#eef1df;color:#65714e;font:11px -apple-system,\"PingFang SC\",sans-serif;padding:5px 8px;border-radius:6px}"
+    },
+    {
+      "name": "小院操作面板",
+      "kind": "card",
+      "description": "主操作、工作状态及帮助的共享纸色容器。",
+      "html": "<aside class=\"ds-panel\"><h2>本鱼的扶砖日记</h2><p>今天的砖，还一块都没倒。</p></aside>",
+      "css": ".ds-panel{background:#fffdf6;color:#4e5745;box-shadow:0 6px 22px #545c3d0a;border-radius:20px;padding:25px 23px;min-width:0}.ds-panel h2{font:400 20px/1.3 \"Garden Happy\",sans-serif;margin:0}.ds-panel p{font:13px/1.65 -apple-system,\"PingFang SC\",sans-serif;color:#5e6b52;margin:14px 0 15px}",
+      "refersTo": "garden-panel"
+    },
+    {
+      "name": "场景返回链接",
+      "kind": "nav",
+      "description": "低优先级文字导航。",
+      "html": "<a class=\"ds-nav\" href=\"#chat\">返回聊天预览</a>",
+      "css": ".ds-nav{font:12px -apple-system,\"PingFang SC\",sans-serif;color:#586e55;text-underline-offset:4px;margin-right:8px}.ds-nav:focus-visible{outline:3px solid #9a583d;outline-offset:3px}"
+    },
+    {
+      "name": "聊天发送按钮",
+      "kind": "button",
+      "description": "原海底聊天页的青蓝主操作。",
+      "html": "<button class=\"ds-chat-primary\">发送给本鱼 ↗</button>",
+      "css": ".ds-chat-primary{font:550 14px -apple-system,BlinkMacSystemFont,\"PingFang SC\",sans-serif;background:var(--accent,#087c8a);color:#fff;padding:10px 15px;border:0;border-radius:8px;cursor:pointer;transition:background .16s,color .16s}.ds-chat-primary:hover{background:var(--accent-dark,#05616c)}.ds-chat-primary:focus-visible{outline:3px solid #24a7ba;outline-offset:3px}",
+      "refersTo": "chat-button-primary"
+    },
+    {
+      "name": "聊天停止按钮",
+      "kind": "button",
+      "description": "原海底聊天页独立停止操作。",
+      "html": "<button class=\"ds-chat-stop\">停止说话</button>",
+      "css": ".ds-chat-stop{font:550 14px -apple-system,BlinkMacSystemFont,\"PingFang SC\",sans-serif;background:#f9edef;color:var(--danger,#ad3849);padding:10px 15px;border:0;border-radius:8px;cursor:pointer;transition:background .16s,color .16s}.ds-chat-stop:hover{background:#f1dce0}.ds-chat-stop:focus-visible{outline:3px solid #24a7ba;outline-offset:3px}",
+      "refersTo": "chat-button-stop"
+    },
+    {
+      "name": "小院背景切换",
+      "kind": "button",
+      "description": "3×3 真实背景缩略图，保留原六套并在第三行新增三套蓝白二次元像素背景；aria-pressed 标识当前选项；加载成功后更新选中框、标题和当前背景名称，保留游戏状态。",
+      "html": "<button class=\"ds-scene\" aria-pressed=\"true\"><span>樱花庭院</span></button>",
+      "css": ".ds-scene{font:500 12px -apple-system,\"PingFang SC\",sans-serif;background:#fff9ed;color:#474f3c;padding:10px 12px;border:0;border-radius:11px;outline:2px solid #aa496a}.ds-scene:focus-visible{outline-offset:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "大肥鱼的海边小院",
+    "overview": "扶砖页是一座可以玩耍的可爱卡通小院：奶油色沙地连接小屋、花树与鲸鱼浇水壶，六排带笑脸的彩砖和大肥鱼站在同一片地面。柔和的鼠尾草色操作区让出视觉中心，砖排的编号、颜色与状态把玩耍意图说清楚。当前视觉由实现代码及已审阅画面确立，没有独立的批准设计稿。\n\n这是两个有边界的场景身份。原聊天预览继续使用海底图、青蓝操作强调和系统字体；小院身份限定在扶砖页的 `.garden-room` 内。两者保留原角色、作者署名与本地状态提示，不把小院配色扩散到聊天页。",
+    "keyCharacteristics": [
+      "连续沙地与投影接触阴影，让角色和砖真正落地。",
+      "六色笑脸砖配六个号码，颜色与文字共同识别；1到6号分别为4至9块，前端对齐、后端逐排加长。",
+      "手写感标题配清楚的系统正文，操作面板安静而紧凑；聊天位于小院控制台顶部，AI 回复与扶砖共用当前角色、语音口型和画面字幕。",
+      "真实小屋、花树与鲸鱼浇水壶插画构成场景，互动对象留在可玩的空地。",
+      "蓝白太阳伞与浅木色小板凳形成休息角，角色空闲并膝坐着看手机，任务触发后起身扶砖；上身保持直立，双脚落地，画布以 2 倍分辨率绘制。"
+    ],
+    "rules": [
+      {
+        "name": "The Scope Rule",
+        "body": "小院颜色只作用于扶砖页，原聊天页继续以青蓝色为操作强调。",
+        "section": "colors"
+      },
+      {
+        "name": "The Ground Contact Rule",
+        "body": "扶砖场景中的砖、角色及其阴影必须共享投影地面，不能靠悬浮平台补出深度。",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** 将小院插画、互动对象与接触阴影作为同一世界整体缩放。",
+      "**Do** 让 1～6 号在画布和操作区使用相同颜色、号码及真实状态。",
+      "**Do** 把手写字体留给短标题和号码，把系统字体留给说明和状态。",
+      "**Do** 保留角色原貌、模型作者署名与真实本地试玩提示。"
+    ],
+    "donts": [
+      "**Don't** 为扶砖场景增加悬空台板，或让脚和砖底脱离共同地面。",
+      "**Don't** 用小院暖色覆盖原聊天页的青蓝身份。",
+      "**Don't** 只靠颜色区分砖排，或以模拟状态暗示已接入真实弹幕。"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "tool": "built-in imagegen",
+  "mode": "generate",
+  "transparent_background": true,
+  "date": "2026-11-06",
+  "assets": [
+    {
+      "id": "parasol",
+      "file": "rest-parasol.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent game prop sprite, isolated object ONLY, no environment. Authentic hand-authored Japanese anime JRPG pixel art: clear large square pixel clusters and stepped contours, navy pixel outlines, restrained blue-white palette, flat 2-3 tone shading, minimal dithering, no smooth gradients, no blurry pixels, no rounded clay 3D or toy render. View is a front three-quarter game camera slightly elevated 30 degrees. No characters, no people, no text, no watermark. Transparent background with real alpha, not a checkerboard painted into the image. Object tightly fitted with only a small transparent margin.\nPrimary request: one LARGE elegant beach sun umbrella, navy blue and white alternating fabric panels, scalloped but angular pixel hem, a tiny blue whale fin ornament at the top. Broad open canopy across the upper 35% of the image, tall thin natural wood center pole extending to a small heavy circular navy stand at the bottom. The entire object is visible. A slender pole, not a table or chair. Symmetrical broad parasol, diameter approximately equal to total height. The pole is visible and extends all the way to the ground. Tiny subtle translucent ground contact shadow only. Square sprite canvas.",
+      "source": "exec-b1fcaa72-a6c1-46e8-9e96-b370637803bd.png"
+    },
+    {
+      "id": "lounge",
+      "file": "rest-lounge.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent game prop sprite, isolated object ONLY, no environment. Authentic hand-authored Japanese anime JRPG pixel art: clear large square pixel clusters and stepped contours, navy pixel outlines, restrained blue-white palette, flat 2-3 tone shading, minimal dithering, no smooth gradients, no blurry pixels, no rounded clay 3D or toy render. View is a front three-quarter game camera slightly elevated 30 degrees. No characters, no people, no text, no watermark. Transparent background with real alpha, not a checkerboard painted into the image. Object tightly fitted with only a small transparent margin.\nPrimary request: one empty reclining beach chaise lounge deck chair with a wooden frame and navy-white striped cushion, a small pale blue pillow at the head. Clearly a long reclining lounge, not a normal armchair. Side-on three-quarter camera matching a game floor. HEAD / raised backrest at UPPER LEFT, FOOT END at LOWER RIGHT. The long body support line runs diagonally down-right about 40 degrees from horizontal: pillow at x25%, y15%, hip seat at x50%, y50%, foot support at x85%, y85%. Slim elegant legs firmly on the same flat ground, low open armrests. Leave the striped seat fully visible to overlay an actual anime character later. No parasol, no phone, no people. Square sprite canvas. Crisp flat blue-white anime pixel game furniture.",
+      "source": "exec-3ae4da95-1ad5-44b3-b3c8-0da2e4b562eb.png"
+    }
+  ]
+}

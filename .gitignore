@@ -1,0 +1,10 @@
+.venv/
+.local/
+__pycache__/
+web/vendor/
+web/assets/
+.DS_Store
+.impeccable/review/
+.env
+.env.*
+!.env.example

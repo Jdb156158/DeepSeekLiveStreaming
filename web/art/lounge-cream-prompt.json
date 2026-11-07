@@ -1,0 +1,9 @@
+{
+  "tool": "built-in imagegen",
+  "mode": "edit",
+  "transparent_background": true,
+  "reference": "rest-lounge.png",
+  "file": "rest-lounge-cream.png",
+  "source": "exec-9ed97b11-73c9-4bff-8270-5f82cad572ac.png",
+  "prompt": "Use case: precise-object-edit.\nInput image 1 is the EDIT TARGET: a transparent pixel-art reclining chaise lounge sprite.\nChange ONLY its color/material palette. Keep the same chair silhouette, square canvas framing, position, scale, leg geometry, pillow shape, elevated front three-quarter perspective, crisp pixel-art edges, all transparent areas and alpha background exactly as the input. This is a game sprite with an already aligned character overlay, so do not shift, rotate, resize, crop or redesign anything.\nReplace the busy navy-and-white striped upholstery with a quiet solid PALE WARM CREAM cushion (#f5e2bd), subtle warm beige pixel shadows (#d8bd91), and only a narrow soft peach piping accent (#d7a58e). Remove every broad dark blue stripe. Make the pillow soft muted peach/apricot (#e7bea4), with warm cream highlights. Keep the wood frame light natural honey oak, with warm brown pixel outlines instead of dark navy outlines.\nPurpose: a navy-haired, navy-dressed anime girl will lie on it, so the chair must be a light warm low-detail surface that clearly separates her dark silhouette. Do not draw the girl. No blue upholstery, no contrasting stripes, no new decorations, no objects, no text, no logo, no watermark.\nRetain authentic crisp JRPG pixel art with blocky pixels. Preserve genuine transparent background. Output one full-size square RGBA sprite."
+}

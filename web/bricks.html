@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>大肥鱼的扶砖小院</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/bricks.css">
+  <script src="/vendor/live2dcubismcore.min.js"></script>
+  <script src="/vendor/pixi.min.js"></script>
+  <script src="/vendor/cubism4.min.js"></script>
+  <script type="module" src="/bricks.mjs?v=20261107-rows"></script>
+</head>
+<body class="garden-room">
+  <header class="topbar">
+    <div class="identity"><span class="fish-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 17c0-7 5-11 12-11 6 0 11 5 11 11v7l-5-3c-2 3-6 5-10 4-5-1-8-4-8-8Z"/><circle cx="20" cy="14" r="1.4"/><path d="m5 20-4 2 1-6"/></svg></span><h1>大肥鱼的扶砖小院<span>今天，也要整整齐齐</span></h1></div>
+    <div class="top-actions"><a href="#garden-chat">和本鱼聊聊</a><button id="game-sound" class="secondary">开启声音</button><button id="game-pause" class="secondary">暂停</button></div>
+  </header>
+  <main class="brick-workspace">
+    <section class="game-preview" aria-label="扶砖互动场景">
+      <div class="brick-stage" id="brick-stage">
+        <div class="game-title"><h2>大肥鱼的<br><span id="scene-title">扶砖小院</span></h2><p>你们轻轻推，本鱼慢慢扶。</p></div>
+        <div class="game-local">本地试玩 · 未接入抖音</div>
+        <canvas id="game-board" aria-label="六排彩色砖与自动扶砖的大肥鱼"></canvas>
+        <div id="fish-bubble" class="fish-bubble" hidden></div>
+        <div id="board-loading" class="board-loading">大肥鱼正在准备上工…</div>
+        <div id="paused-overlay" class="paused-overlay" hidden>休息一下<br><span>点击“继续”就接着扶</span></div>
+        <div class="game-caption"><span id="game-caption">本鱼先坐一会儿，有事叫我。</span></div>
+      </div>
+      <div class="preview-footer"><span>1～6号，想推哪排就推哪排</span><span>免费参与 · 不用礼物</span></div>
+    </section>
+    <aside class="brick-controls control-panel">
+      <section class="garden-chat" id="garden-chat" aria-labelledby="chat-heading">
+        <div class="section-heading"><h2 id="chat-heading">和本鱼聊聊</h2><span id="chat-provider-label" class="tag">连接中</span></div>
+        <p class="description">坐着聊，边扶砖也能回你。</p>
+        <div class="suggestions"><button type="button" data-chat-prompt="你好，介绍一下你自己吧">认识一下</button><button type="button" data-chat-prompt="我今天有点累，安慰我一下">安慰我一下</button><button type="button" data-chat-prompt="给我讲一个关于小鱼的笑话">讲个小笑话</button></div>
+        <div id="garden-messages" class="messages" role="log" aria-label="小院聊天记录" aria-live="polite"><div class="empty-message"><p>本鱼在小院等你。</p><span>聊聊天，也可以一起捣捣蛋。</span></div></div>
+        <form id="garden-chat-form"><label class="sr-only" for="garden-message">和本鱼说的话</label><textarea id="garden-message" rows="2" maxlength="400" placeholder="本鱼，扶砖累不累呀？"></textarea><div class="composer-footer"><label class="read-mode"><input id="garden-read-mode" type="checkbox">只朗读这句话</label><button class="primary" id="garden-send" type="submit">发送给本鱼</button></div></form>
+        <div class="chat-feedback-row"><p id="chat-feedback" class="feedback" role="status">发一句话，本鱼会在小院里回答。</p><button id="chat-stop" type="button" class="text-button" disabled>停止说话</button></div>
+        <details class="chat-settings"><summary>对话模型设置</summary><p id="chat-model-status" class="settings-note">正在检查对话服务…</p><form id="garden-settings-form"><label for="chat-provider">对话来源</label><select id="chat-provider"><option value="local">本地 Qwen · 无需 Key</option><option value="deepseek">DeepSeek API</option></select><label for="chat-api-key">API Key</label><input id="chat-api-key" type="password" autocomplete="off" placeholder="仅保存在本机"><label for="chat-model-id">模型名称</label><input id="chat-model-id" value="deepseek-flash"><button type="submit" class="secondary">保存配置</button><p class="settings-note">本地模型适合体验。切换到 DeepSeek 后，聊天内容会发送至其 API。</p></form></details>
+      </section>
+      <section class="scene-settings" aria-labelledby="scene-heading">
+        <div class="section-heading"><h2 id="scene-heading">换个地方玩</h2><span class="tag">9 套背景</span></div>
+        <p class="description">新增 3 套像素风。随时换景，扶砖进度会保留。</p>
+        <div id="scene-options" class="scene-options" role="group" aria-label="直播背景"></div>
+        <p id="scene-feedback" class="scene-feedback" role="status">当前：海边小院</p>
+      </section>
+      <section>
+        <div class="section-heading"><h2>来小院捣个蛋</h2><span class="tag">不用礼物</span></div>
+        <p class="description">1号最短，6号最长。选一排，看本鱼忙起来。</p>
+        <div id="lane-commands" class="lane-commands" aria-label="选择推倒哪排砖"></div>
+        <form id="brick-command-form"><label for="brick-command">也可以发一句“1号倒”</label><div class="command-input"><input id="brick-command" aria-label="模拟弹幕" placeholder="想推几号呀？" maxlength="30" autocomplete="off"><button type="submit" class="primary">推一下</button></div></form>
+        <p id="command-feedback" class="feedback" role="status">六排砖已就位，等你发号施令。</p>
+      </section>
+      <section class="work-status">
+        <div class="section-heading"><h2>本鱼的扶砖日记</h2><span id="work-phase" class="tag">待命中</span></div>
+        <p id="current-task" class="current-task" aria-live="polite">今天的砖，还一块都没倒。</p>
+        <dl><div><dt>等待扶起</dt><dd><span id="down-count">0</span> 块</dd></div><div><dt>排队中</dt><dd id="queue-status">没有待办</dd></div><div><dt>累计扶好</dt><dd><span id="repair-count">0</span> 块</dd></div></dl>
+        <button id="game-reset" class="secondary reset-button">收拾小院，重新来</button>
+      </section>
+      <details class="game-notes"><summary>怎么玩 · 本鱼的声音</summary><p>每个号码对应一整排。砖会连续倒下，本鱼会按顺序逐块扶正。</p><p>同一排没扶完时不会重复推倒；可以推别排，让她忙起来。</p><label><input type="checkbox" id="game-voice" checked>开启声音后，让本鱼边干活边吐槽</label><p id="voice-feedback" class="voice-feedback">扶砖吐槽使用固定短台词，聊天区使用 AI 回复。</p></details>
+      <footer class="panel-footer">本地试玩，尚未接入抖音弹幕。<br>聊天、扶砖都在小院里，聊天回复优先播放。</footer>
+    </aside>
+  </main>
+</body>
+</html>
