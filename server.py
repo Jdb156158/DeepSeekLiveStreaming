@@ -258,9 +258,31 @@ DANMAKU_ENTER_COOLDOWN = 4
 DANMAKU_LAST_ENTER = [0.0]
 
 
-# Distinct viewers seen this session, by Douyin user id (falling back to the display name).
-# Every live-room message carries the sender, so this counts people rather than packets.
+# Distinct viewers seen for this room, by Douyin user id (falling back to the display name).
+# Every live-room message carries the sender, so this counts people rather than packets. The set is
+# kept on disk so restarting the backend does not reset the board to zero mid-stream.
 DANMAKU_VIEWERS = {}
+DANMAKU_VIEWERS_FILE = LOCAL / "viewers.json"
+
+
+def _viewers_load(room_id):
+    """Read back the viewer set for this room; a different room starts clean."""
+    try:
+        saved = json.loads(DANMAKU_VIEWERS_FILE.read_text(encoding="utf-8"))
+        if str(saved.get("room")) == str(room_id):
+            return {str(k): str(v) for k, v in (saved.get("people") or {}).items()}
+    except Exception:
+        pass
+    return {}
+
+
+def _viewers_save():
+    try:
+        room = (DANMAKU.get("room") or {}).get("id") or ""
+        DANMAKU_VIEWERS_FILE.write_text(json.dumps({"room": room, "people": DANMAKU_VIEWERS},
+            ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        pass
 
 
 def danmaku_viewer(user):
@@ -270,6 +292,7 @@ def danmaku_viewer(user):
         return len(DANMAKU_VIEWERS)
     if uid not in DANMAKU_VIEWERS:
         DANMAKU_VIEWERS[uid] = str(user.get("name") or "")[:40]
+        _viewers_save()
     return len(DANMAKU_VIEWERS)
 
 
@@ -336,8 +359,14 @@ async def danmaku(request):
                 if not isinstance(item, dict):
                     continue
                 if item.get("roomId") and not item.get("method"):
-                    DANMAKU["room"] = {"name": str(item.get("nickname") or "")[:40],
+                    previous = (DANMAKU.get("room") or {}).get("id")
+                    DANMAKU["room"] = {"id": str(item.get("roomId")), "name": str(item.get("nickname") or "")[:40],
                         "title": str(item.get("title") or "")[:80], "status": item.get("status")}
+                    # Restore this room's viewer set after a restart; a new room starts empty.
+                    if str(item.get("roomId")) != str(previous):
+                        DANMAKU_VIEWERS.clear()
+                        DANMAKU_VIEWERS.update(_viewers_load(item.get("roomId")))
+                    DANMAKU["viewers"] = len(DANMAKU_VIEWERS)
                     continue
                 DANMAKU["received"] += 1
                 event = danmaku_feed(item)

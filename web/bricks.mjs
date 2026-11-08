@@ -962,10 +962,12 @@ function rollStatsDay(){
 }
 // Viewer count comes from the backend, which deduplicates by Douyin user id; this page only
 // remembers the largest number it has seen so the board never counts down.
+// The backend is authoritative: the number may drop (backend restart, new room), and the board
+// must follow instead of being stuck at the highest value it ever saw.
 function noteViewers(total){
   rollStatsDay();
   const value=Math.max(0,Number(total)||0);
-  if(value>stats.viewers) { stats.viewers=value;saveStats(); }
+  if(value!==stats.viewers) { stats.viewers=value;saveStats(); }
 }
 function updateStatsBoard(){
   rollStatsDay();
