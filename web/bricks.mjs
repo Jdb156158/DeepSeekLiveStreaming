@@ -751,10 +751,12 @@ function syncCamAnchor() {
   const box=stage.getBoundingClientRect();
   // The layout is still settling right after load; skip the early pass rather than anchor to junk.
   if(box.width<40||box.height<40) return;
-  const camH=cam.offsetHeight||Math.round(box.width*.13)||96;
-  // Distance from the stage's bottom edge upwards; the CSS inset is 5px.
+  const camH=cam.offsetHeight||Math.round(box.width*.09)||64;
+  // Sit about one camera-height plus a little above the stage's bottom edge (roughly 130px on a
+  // 1440-wide console), then add whatever is needed to pull it back inside the window.
+  const base=camH*1.5+20;
   const overflow=Math.max(0,box.bottom-window.innerHeight);
-  const lift=Math.round(Math.min(overflow+5,Math.max(5,box.height-camH-5)));
+  const lift=Math.round(Math.min(overflow+base,Math.max(base,box.height-camH-base*0.6)));
   stage.style.setProperty('--cam-lift',`${lift}px`);
 }
 window.addEventListener('resize',syncCamAnchor);
