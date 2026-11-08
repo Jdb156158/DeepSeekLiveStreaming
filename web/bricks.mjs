@@ -993,15 +993,17 @@ function updateStatsBoard(){
 }
 setInterval(updateStatsBoard,500);
 // The backend is the source of truth for the viewer count; pull it so the board stays in step
-// even when no new arrival event has come through.
-setInterval(async()=>{
+// even when no new arrival event has come through. Read once immediately, then every 5 seconds.
+async function syncViewers(){
   try {
     const response=await fetch('/api/danmaku/status',{cache:'no-store'});
     if(!response.ok) return;
     const data=await response.json();
     if(Number.isFinite(data.viewers)) noteViewers(data.viewers);
   } catch { /* backend restarting */ }
-},10000);
+}
+void syncViewers();
+setInterval(syncViewers,5000);
 function updatePanels() {
   const snapshot=game.snapshot(),actor=game.actor;
   for(const row of game.rows) {

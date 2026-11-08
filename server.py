@@ -276,9 +276,11 @@ def danmaku_viewer(user):
 def danmaku_feed(message):
     """Turn one Dycast message into a game/chat event. Returns the accepted payload or None."""
     method = str(message.get("method") or "")
-    # Count the viewer behind every event type we understand, not just the ones we forward.
+    # Count the person behind every message that carries a user id: arrival, chat, like, gift,
+    # ranking, follow. Counting only a few types is why the board froze while the room was busy —
+    # chat and ranking messages were the most common ones and they were skipped.
     viewer_count = danmaku_viewer(message.get("user") or {})
-    if method in ("WebcastMemberMessage", "WebcastSocialMessage", "WebcastLikeMessage"):
+    if viewer_count:
         DANMAKU["viewers"] = viewer_count
     if method == "WebcastMemberMessage":
         # A busy room can send these in bursts; keep the greeting from firing non-stop.
