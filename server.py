@@ -240,6 +240,7 @@ async def socket(request):
 # Dycast first sends one live-room object, then arrays of DyMessage batches. Only chat text is fed
 # to the game/chat pipeline; everything else is counted but not acted on.
 DANMAKU = {"connected": False, "room": None, "received": 0, "accepted": 0, "viewers": 0, "last_error": None}
+# Filled with the display baseline once the constants below are defined (see _viewers_roll).
 DANMAKU_CLIENTS = set()
 # Same text from the same user inside this window is treated as one message.
 DANMAKU_DEDUPE_SECONDS = 8
@@ -272,6 +273,9 @@ VIEWER_DISPLAY_BASE = 200
 
 def _viewer_display_count():
     return VIEWER_DISPLAY_BASE + len(DANMAKU_VIEWERS)
+
+
+DANMAKU["viewers"] = _viewer_display_count()
 
 
 def _viewers_day():
