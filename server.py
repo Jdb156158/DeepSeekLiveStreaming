@@ -184,7 +184,7 @@ async def socket(request):
 # ---- 弹幕输入：Dycast Desktop 通过 WebSocket 转发结构化消息到 127.0.0.1:8765 ----------
 # Dycast first sends one live-room object, then arrays of DyMessage batches. Only chat text is fed
 # to the game/chat pipeline; everything else is counted but not acted on.
-DANMAKU = {"connected": False, "room": None, "received": 0, "accepted": 0, "last_error": None}
+DANMAKU = {"connected": False, "room": None, "received": 0, "accepted": 0, "viewers": 0, "last_error": None}
 DANMAKU_CLIENTS = set()
 # Same text from the same user inside this window is treated as one message.
 DANMAKU_DEDUPE_SECONDS = 8
@@ -204,9 +204,28 @@ DANMAKU_ENTER_COOLDOWN = 4
 DANMAKU_LAST_ENTER = [0.0]
 
 
+# Distinct viewers seen this session, by Douyin user id (falling back to the display name).
+# Every live-room message carries the sender, so this counts people rather than packets.
+DANMAKU_VIEWERS = {}
+
+
+def danmaku_viewer(user):
+    """Remember one viewer and return the current distinct count."""
+    uid = str(user.get("id") or user.get("sec_uid") or user.get("name") or "").strip()
+    if not uid:
+        return len(DANMAKU_VIEWERS)
+    if uid not in DANMAKU_VIEWERS:
+        DANMAKU_VIEWERS[uid] = str(user.get("name") or "")[:40]
+    return len(DANMAKU_VIEWERS)
+
+
 def danmaku_feed(message):
     """Turn one Dycast message into a game/chat event. Returns the accepted payload or None."""
     method = str(message.get("method") or "")
+    # Count the viewer behind every event type we understand, not just the ones we forward.
+    viewer_count = danmaku_viewer(message.get("user") or {})
+    if method in ("WebcastMemberMessage", "WebcastSocialMessage", "WebcastLikeMessage"):
+        DANMAKU["viewers"] = viewer_count
     if method == "WebcastMemberMessage":
         # A busy room can send these in bursts; keep the greeting from firing non-stop.
         now = asyncio.get_running_loop().time()
@@ -214,7 +233,7 @@ def danmaku_feed(message):
             return None
         DANMAKU_LAST_ENTER[0] = now
         # Deliberately no user name: the stream never shows or speaks who joined.
-        return {"type": "enter", "method": method}
+        return {"type": "enter", "method": method, "viewers": viewer_count}
     if method not in ("WebcastChatMessage", "WebcastEmojiChatMessage"):
         return None
     user = message.get("user") or {}
@@ -282,7 +301,7 @@ async def danmaku_status(request):
 async def danmaku_poll(request):
     """Hand pending danmaku to the courtyard page, oldest first, then clear the queue."""
     items, DANMAKU_PENDING[:] = DANMAKU_PENDING[:], []
-    return web.json_response({"items": items})
+    return web.json_response({"items": items, "viewers": len(DANMAKU_VIEWERS)})
 
 
 def main():

@@ -598,6 +598,7 @@ async function pollDanmaku() {
     if(!response.ok) throw new Error();
     const data=await response.json();
     danmakuMissing=0;
+    if(Number.isFinite(data.viewers)) noteViewers(data.viewers);
     const board=$('game-board');
     board.dataset.danmaku=data.items.length>0?'1':board.dataset.danmaku;
     for(const item of data.items) danmakuQueue.push(item);
@@ -662,8 +663,8 @@ function updateConfetti() {
   }
 }
 let welcomeBusyUntil=0;
-function handleViewerEnter() {
-  countViewer();
+function handleViewerEnter(viewers) {
+  noteViewers(viewers);
   // Two bursts from the lower corners read as a welcome gate rather than a single pop.
   confettiBurst(150,760,60);
   confettiBurst(850,760,60);
@@ -680,7 +681,7 @@ function handleViewerEnter() {
   }
 }
 function handleDanmaku(item) {
-  if(item.type==='enter') { handleViewerEnter(); return 0; }
+  if(item.type==='enter') { handleViewerEnter(item.viewers); return 0; }
   const text=String(item.text||'').trim();
   if(!text) return 0;
   const who=item.user||'观众';
@@ -862,7 +863,13 @@ function rollStatsDay(){
   // Called from the timer: a stream that crosses midnight must roll over without a reload.
   if(stats.day!==todayKey()) { stats={day:todayKey(),viewers:0,repaired:0};saveStats(); }
 }
-function countViewer(){ rollStatsDay();stats.viewers++;saveStats(); }
+// Viewer count comes from the backend, which deduplicates by Douyin user id; this page only
+// remembers the largest number it has seen so the board never counts down.
+function noteViewers(total){
+  rollStatsDay();
+  const value=Math.max(0,Number(total)||0);
+  if(value>stats.viewers) { stats.viewers=value;saveStats(); }
+}
 function updateStatsBoard(){
   rollStatsDay();
   const now=new Date(), pad=n=>String(n).padStart(2,'0');
@@ -888,6 +895,16 @@ function updateStatsBoard(){
   $('stat-viewers').textContent=stats.viewers;
 }
 setInterval(updateStatsBoard,500);
+// The backend is the source of truth for the viewer count; pull it so the board stays in step
+// even when no new arrival event has come through.
+setInterval(async()=>{
+  try {
+    const response=await fetch('/api/danmaku/status',{cache:'no-store'});
+    if(!response.ok) return;
+    const data=await response.json();
+    if(Number.isFinite(data.viewers)) noteViewers(data.viewers);
+  } catch { /* backend restarting */ }
+},10000);
 function updatePanels() {
   const snapshot=game.snapshot(),actor=game.actor;
   for(const row of game.rows) {
