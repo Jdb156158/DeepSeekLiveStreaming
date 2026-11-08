@@ -78,3 +78,7 @@
   .brick-workspace .brick-controls{height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-color:#bcc9a8 #f4f4e9}
 }
 @media(max-width:1020px){.brick-workspace .brick-controls{max-height:none}}
+
+/* Live switch: green while streaming, warm grey when parked. */
+#game-live[aria-pressed="true"]{background:#e6f2df;color:#3d6b32}
+#game-live.is-paused{background:#f6e6d6;color:#8a5326}

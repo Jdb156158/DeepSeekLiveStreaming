@@ -143,6 +143,8 @@ async def complete(text):
 
 async def chat(request):
     global GENERATION
+    if LIVE_PAUSED["paused"]:
+        return web.json_response({"error": "已暂停直播，点顶部“恢复直播”后再聊。"}, status=503)
     data = await request.json()
     text = str(data.get("text", "")).strip()
     if not text or len(text) > 400:
@@ -180,8 +182,24 @@ async def stop(request):
     return web.json_response({"ok": True})
 
 
+# When the operator is not streaming, this flag parks the paid work (model calls and voice) while
+# leaving the page, the courtyard and the danmaku socket up, so going live again is one click.
+LIVE_PAUSED = {"paused": False}
+
+
+async def live_state(request):
+    if request.method == "POST":
+        data = await request.json()
+        LIVE_PAUSED["paused"] = bool(data.get("paused"))
+        if LIVE_PAUSED["paused"]:
+            await broadcast({"type": "stop"})
+    return web.json_response({"paused": LIVE_PAUSED["paused"]})
+
+
 async def game_banter(request):
     """One short filler line for a quiet room, with its voice. Never touches chat history."""
+    if LIVE_PAUSED["paused"]:
+        return web.json_response({"error": "paused"}, status=503)
     data = await request.json()
     kind = _pick_topic(str(data.get("kind") or ""))
     current = settings()
@@ -213,6 +231,8 @@ async def game_banter(request):
 
 
 async def game_voice(request):
+    if LIVE_PAUSED["paused"]:
+        return web.json_response({"error": "已暂停直播。"}, status=503)
     data = await request.json()
     text = str(data.get("text", "")).strip()
     if not text or len(text) > 160:
@@ -427,7 +447,8 @@ def main():
         web.get("/api/danmaku/status", danmaku_status),
         web.get("/api/danmaku/poll", danmaku_poll),
         web.post("/api/settings", configure), web.post("/api/chat", chat), web.post("/api/stop", stop),
-        web.post("/api/game/voice", game_voice), web.post("/api/game/banter", game_banter), web.get("/ws", socket)])
+        web.post("/api/game/voice", game_voice), web.post("/api/game/banter", game_banter),
+        web.get("/api/live", live_state), web.post("/api/live", live_state), web.get("/ws", socket)])
     app.router.add_static("/audio/", AUDIO)
     app.router.add_static("/", ROOT / "web", show_index=False)
     loop = asyncio.new_event_loop()

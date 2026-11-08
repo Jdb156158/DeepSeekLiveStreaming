@@ -387,6 +387,41 @@ bgmLoadList().then(()=>{
   if(!$('music-feedback')) return;
   $('music-feedback').textContent=BGM.element?'点一首直接切换。':'点“开启声音”后开始播放，也可以直接点一首。';
 });
+// ---- Live switch: park the paid work between streams ----------------------------------------
+// Pausing stops the filler talk and declines chat/voice requests on the backend, so an idle page
+// costs nothing. The courtyard, the camera and the danmaku socket stay up for a one-click return.
+const LIVE={paused:false};
+async function setLivePaused(paused){
+  LIVE.paused=!!paused;
+  const button=$('game-live');
+  if(button){
+    button.textContent=LIVE.paused?'已暂停直播':'直播中';
+    button.setAttribute('aria-pressed',String(!LIVE.paused));
+    button.classList.toggle('is-paused',LIVE.paused);
+  }
+  if(LIVE.paused){
+    stopVoice();
+    if(BGM.element){BGM.element.pause();BGM.playing=false;}
+  }
+  try {
+    await fetch('/api/live',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({paused:LIVE.paused})});
+  } catch { /* the local flag still guards the page */ }
+}
+async function loadLiveState(){
+  try {
+    const response=await fetch('/api/live',{cache:'no-store'});
+    if(!response.ok) return;
+    const data=await response.json();
+    if(data.paused) await setLivePaused(true);
+  } catch { /* backend starting */ }
+}
+$('game-live')?.addEventListener('click',()=>{
+  if(!LIVE.paused){ void setLivePaused(true); return; }
+  void setLivePaused(false).then(()=>{ if(soundOn&&BGM.element) BGM.element.play().catch(()=>{}); });
+});
+void loadLiveState();
+
 // ---- Dead-air filler: when nobody interacts, the fish says something short -------------------
 // A line is fetched ahead of time and played locally, so a slow model never leaves the room silent.
 // ?banterGap=<seconds> overrides the wait (default 10s of real silence: the room never goes quiet).
@@ -403,13 +438,13 @@ const BANTER_OFFLINE=[
   '刚刚差点睡着，梦里也在扶砖。'
 ];
 function banterBusy() {
-  return chatPending||chatPlaying||voiceBusy||game.paused;
+  return chatPending||chatPlaying||voiceBusy||game.paused||LIVE.paused;
 }
 // Idle means nothing new happened: no message, no push, no arrival.
 let lastInteractionAt=0;
 function noteInteraction() {lastInteractionAt=performance.now();}
 async function fetchBanter() {
-  if(BANTER.fetching||BANTER.pool.length>=3) return;
+  if(LIVE.paused||BANTER.fetching||BANTER.pool.length>=3) return;
   BANTER.fetching=true;
   try {
     const response=await fetch('/api/game/banter',{method:'POST',headers:{'Content-Type':'application/json'},
