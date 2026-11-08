@@ -754,15 +754,30 @@ function syncCamAnchor() {
   const camH=cam.offsetHeight||Math.round(box.width*.09)||64;
   // Sit about one camera-height plus a little above the stage's bottom edge (roughly 130px on a
   // 1440-wide console), then add whatever is needed to pull it back inside the window.
-  const base=camH*1.5+20;
+  // The mini 2048 panel owns the bottom-left corner as a fixed inset; the camera stacks directly on
+  // top of it so the two never overlap.
+  const mini=$('mini-2048');
+  const miniW=mini?.offsetWidth||Math.round(box.width*.26)||180;
+  // Measured height, else a ratio-based estimate while the panel is still laying out (~1.2× width).
+  const miniH=mini?.offsetHeight||Math.round(miniW*1.2);
+  const base=Math.round(box.height*.14)+miniH+28;
   const overflow=Math.max(0,box.bottom-window.innerHeight);
   const lift=Math.round(Math.min(overflow+base,Math.max(base,box.height-camH-base*0.6)));
   stage.style.setProperty('--cam-lift',`${lift}px`);
+  // Keep the panel itself inside the window when the stage bottom is below the fold.
+  const need=Math.round(overflow);
+  stage.style.setProperty('--mini-lift',`${need}px`);
 }
 window.addEventListener('resize',syncCamAnchor);
 window.addEventListener('scroll',syncCamAnchor,{passive:true});
 // Run a few times while fonts, images and the stage aspect-ratio settle.
-for(const delay of [0,120,400,1000,2000]) setTimeout(syncCamAnchor,delay);
+for(const delay of [0,120,400,1000,2000,3500]) setTimeout(syncCamAnchor,delay);
+// The mini 2048 panel is built by its own module; re-place the camera whenever it changes size.
+if(window.ResizeObserver) {
+  const observer=new ResizeObserver(()=>syncCamAnchor());
+  const mini=$('mini-2048');
+  if(mini) observer.observe(mini);
+}
 function stopCamera() {
   camStream?.getTracks().forEach(track=>track.stop());
   camStream=null;

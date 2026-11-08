@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>大肥鱼的直播间</title>
   <link rel="stylesheet" href="/style.css?v=20261108-camwin">
-  <link rel="stylesheet" href="/bricks.css?v=20261108-camsmall">
+  <link rel="stylesheet" href="/bricks.css?v=20261108-mini8">
   <script src="/vendor/live2dcubismcore.min.js"></script>
   <script src="/vendor/pixi.min.js"></script>
   <script src="/vendor/cubism4.min.js"></script>
-  <script type="module" src="/bricks.mjs?v=20261108-camsmall"></script>
+  <script type="module" src="/bricks.mjs?v=20261108-mini8"></script>
+  <script type="module" src="/mini-2048.mjs?v=20261108-mini8"></script>
   <script>
     // /live is the same courtyard with the console removed, for 直播伴侣 / OBS window capture.
     if (location.pathname.replace(/\/+$/, '') === '/live') document.documentElement.classList.add('live-mode');
@@ -75,6 +76,46 @@
     .live-stats .live-stats-grid small{color:#fff;font-size:9px;font-weight:400;opacity:.9;margin-left:1px}
     @media(max-width:760px){.live-stats{min-width:0;padding:8px 10px;border-radius:12px}.live-stats-clock{font-size:16px}
       .live-stats-grid dd{font-size:12px}.live-stats-grid dt{font-size:9px}}
+    /* Mini 2048: same frosted glass as the boards, bottom-left, under the camera. */
+    .mini-2048{position:absolute;z-index:7;left:3%;bottom:14%;transform:translateY(calc(-1 * var(--mini-lift,0px)));width:min(26%,186px);
+      padding:9px 10px 8px;border-radius:14px;color:#fff;
+      background:rgba(24,32,58,.34);
+      backdrop-filter:blur(10px) saturate(135%);-webkit-backdrop-filter:blur(10px) saturate(135%);
+      border:1px solid rgba(255,255,255,.3);
+      box-shadow:0 6px 22px rgba(20,30,60,.2);
+      opacity:.95;transition:opacity .2s;outline:none}
+    .mini-2048:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:3px}
+    .mini-2048:hover,.mini-2048:focus-within{opacity:1}
+    .mini-head{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+    .mini-title{font-size:13px;font-weight:700;letter-spacing:.05em;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+    .mini-scores{display:flex;gap:9px;margin-left:auto;font-size:9px;opacity:.92}
+    .mini-scores b{display:block;font-size:12px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+    .mini-reset{padding:3px 8px;font-size:10px;line-height:1.2;color:#fff;background:rgba(255,255,255,.2);
+      border:1px solid rgba(255,255,255,.3);border-radius:7px;cursor:pointer;white-space:nowrap}
+    .mini-reset:hover{background:rgba(255,255,255,.34)}
+    .mini-2048-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;aspect-ratio:1;
+      touch-action:none;user-select:none;-webkit-user-select:none}
+    .mini-cell{display:grid;place-items:center;border-radius:6px;
+      background:rgba(255,255,255,.14);color:#fff;font-weight:700;
+      font-size:clamp(9px,calc(var(--mini-size,230px)*.052),15px);line-height:1;
+      font-variant-numeric:tabular-nums;transition:background .12s,color .12s}
+    .mini-cell[data-level="1"]{background:rgba(255,255,255,.82);color:#5a4a36}
+    .mini-cell[data-level="2"]{background:rgba(255,233,196,.88);color:#6b5230}
+    .mini-cell[data-level="3"]{background:#f6c56e;color:#6b4d1e}
+    .mini-cell[data-level="4"]{background:#f2a65a;color:#5c3a12}
+    .mini-cell[data-level="5"]{background:#ee8a54;color:#fff}
+    .mini-cell[data-level="6"]{background:#e8744f;color:#fff}
+    .mini-cell[data-level="7"]{background:#e05f4a;color:#fff}
+    .mini-cell[data-level="8"]{background:#cf4a56;color:#fff}
+    .mini-cell[data-level="9"]{background:#bb3c66;color:#fff}
+    .mini-cell[data-level="10"]{background:#9d3a7d;color:#fff}
+    .mini-cell[data-level="11"]{background:#7b3488;color:#fff}
+    .mini-cell.is-new{animation:miniPop .16s ease-out}
+    @keyframes miniPop{from{transform:scale(.82)}to{transform:scale(1)}}
+    .mini-status{margin:6px 0 0;font-size:9px;line-height:1.4;color:#fff;opacity:.85}
+    .mini-status[data-state="over"]{color:#ffd9a8;opacity:1}
+    .mini-status[data-state="won"]{color:#c8f5c0;opacity:1}
+    @media(max-width:760px){.mini-2048{width:40%;padding:7px 8px}.mini-scores{display:none}}
     /* Reserved area under the courtyard; fill it later. */
     html.live-mode .game-preview::after{content:"";flex:1 1 auto;background:linear-gradient(#f8e3c4,#efd7b3)}
   </style>
@@ -94,6 +135,11 @@
         <div id="paused-overlay" class="paused-overlay" hidden>休息一下<br><span>点击“继续”就接着扶</span></div>
         <div class="game-caption"><span id="game-caption">本鱼先坐一会儿，有事叫我。</span></div>
         <div class="live-cam" id="live-cam" hidden><video id="live-cam-video" autoplay muted playsinline></video></div>
+        <section class="mini-2048" id="mini-2048" tabindex="0" aria-label="2048 小游戏">
+          <div class="mini-head"><span class="mini-title">2048</span><span class="mini-scores"><span>得分<b id="mini-2048-score">0</b></span><span>最高<b id="mini-2048-best">0</b></span></span><button type="button" id="mini-2048-reset" class="mini-reset">重开</button></div>
+          <div class="mini-2048-grid" id="mini-2048-grid" role="application" aria-label="2048 棋盘"></div>
+          <p class="mini-status" id="mini-2048-status" role="status">方向键或滑动玩</p>
+        </section>
         <div class="live-stats" id="live-stats" aria-label="直播数据">
           <div class="live-stats-row"><span class="live-stats-clock" id="stat-clock">--:--</span><span class="live-stats-date" id="stat-date"></span></div>
           <dl class="live-stats-grid">
