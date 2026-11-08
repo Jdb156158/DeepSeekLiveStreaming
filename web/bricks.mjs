@@ -683,8 +683,15 @@ async function refreshChatStatus() {
     if(!response.ok)throw new Error();
     const state=await response.json(),remote=state.provider==='deepseek';
     $('chat-provider-label').textContent=remote?'DeepSeek':'本地 Qwen';
-    $('chat-model-status').textContent=remote?`DeepSeek · ${state.has_api_key?'已配置':'缺少 Key'}`:`本地 Qwen 0.5B · ${state.local_ready?'已就绪':'加载中'}`;
+    const hint=state.api_key_hint||'';
+    $('chat-model-status').textContent=remote?`DeepSeek · ${state.has_api_key?(hint?`已配置（${hint}）`:'已配置'):'缺少 Key'}`:`本地 Qwen 0.5B · ${state.local_ready?'已就绪':'加载中'}`;
     $('chat-provider').value=state.provider;$('chat-model-id').value=state.model;
+    // Show which key is saved without ever writing the secret into the page.
+    const keyInput=$('chat-api-key');
+    if(keyInput) {
+      keyInput.placeholder=state.has_api_key&&hint?`已保存 ${hint}`:'仅保存在本机';
+      keyInput.value='';
+    }
   } catch {$('chat-provider-label').textContent='未连接';$('chat-model-status').textContent='对话服务连接失败，请检查本地服务后刷新页面。';}
 }
 $('garden-settings-form').onsubmit=async event=>{

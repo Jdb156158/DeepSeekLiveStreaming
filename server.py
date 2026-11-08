@@ -77,8 +77,11 @@ async def status(request):
         except (OSError, asyncio.TimeoutError):
             pass
     current = settings()
+    key = str(current.get("api_key") or "")
     return web.json_response({"provider": current["provider"], "local_ready": ready,
-        "has_api_key": bool(current.get("api_key")), "model": current.get("model", "deepseek-flash"),
+        "has_api_key": bool(key), "model": current.get("model", "deepseek-flash"),
+        # Only the tail is exposed, just enough for the operator to recognise which key is saved.
+        "api_key_hint": ("…" + key[-6:]) if len(key) >= 6 else "",
         "danmaku_connected": False})
 
 
