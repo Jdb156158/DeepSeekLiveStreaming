@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>大肥鱼的直播间</title>
   <link rel="stylesheet" href="/style.css?v=20261108-camwin">
-  <link rel="stylesheet" href="/bricks.css?v=20261108-camwin">
+  <link rel="stylesheet" href="/bricks.css?v=20261108-musiclist">
   <script src="/vendor/live2dcubismcore.min.js"></script>
   <script src="/vendor/pixi.min.js"></script>
   <script src="/vendor/cubism4.min.js"></script>
-  <script type="module" src="/bricks.mjs?v=20261108-camwin"></script>
+  <script type="module" src="/bricks.mjs?v=20261108-musiclist"></script>
   <script>
     // /live is the same courtyard with the console removed, for 直播伴侣 / OBS window capture.
     if (location.pathname.replace(/\/+$/, '') === '/live') document.documentElement.classList.add('live-mode');
@@ -126,6 +126,13 @@
         <p class="description">新增 3 套像素风。随时换景，扶砖进度会保留。</p>
         <div id="scene-options" class="scene-options" role="group" aria-label="直播背景"></div>
         <p id="scene-feedback" class="scene-feedback" role="status">当前：海边小院</p>
+      </section>
+      <section class="music-settings" aria-labelledby="music-heading">
+        <div class="section-heading"><h2 id="music-heading">背景音乐</h2><button type="button" id="music-next" class="secondary">下一首</button></div>
+        <p class="description">随机播放，播完自动换。点一首就直接切过去。</p>
+        <div class="music-now"><span id="music-title" class="music-title">尚未开始</span><span id="music-count" class="tag">加载中</span></div>
+        <div id="music-list" class="music-list" role="listbox" aria-label="背景音乐列表"></div>
+        <p id="music-feedback" class="scene-feedback" role="status">点“开启声音”后开始播放。</p>
       </section>
       <section>
         <div class="section-heading"><h2>来小院捣个蛋</h2></div>

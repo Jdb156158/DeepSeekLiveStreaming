@@ -47,6 +47,18 @@
 .scene-option:hover{background:#ecebdc}.scene-option[aria-pressed="true"]{outline-color:var(--scene-accent,#b5543c);background:#fff9ed;color:#474f3c}
 .scene-option:focus-visible{outline:3px solid var(--scene-accent,#b5543c);outline-offset:3px}
 .scene-feedback{font-size:12px;line-height:1.5;color:#68725e;margin:12px 0 0;min-height:18px}
+.music-settings{padding-bottom:21px;margin-bottom:23px;border-bottom:1px solid var(--line)}
+.music-settings .section-heading{align-items:center}
+.music-settings .section-heading button{font-size:11px;padding:6px 11px}
+.music-now{display:flex;align-items:center;gap:8px;margin:10px 0;padding:9px 11px;background:#f5f2e7;border-radius:10px}
+.music-title{flex:1;min-width:0;font-size:12px;line-height:1.45;font-weight:500;color:#474f3c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.music-list{display:grid;gap:2px;max-height:230px;overflow-y:auto;overscroll-behavior:contain;scrollbar-color:#bcc9a8 #f4f4e9;padding:2px}
+.music-item{display:flex;align-items:center;gap:8px;width:100%;min-width:0;text-align:left;padding:7px 9px;background:transparent;color:#5c6651;border:0;border-radius:8px!important;font-size:12px;line-height:1.35}
+.music-item:hover{background:#ecebdc}
+.music-item[aria-selected="true"]{background:#fff9ed;color:#474f3c;font-weight:600;box-shadow:inset 0 0 0 1px #d9c9a6}
+.music-item:focus-visible{outline:3px solid var(--scene-accent,#b5543c);outline-offset:-1px}
+.music-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.music-len{flex:none;font-size:11px;color:#7c8670;font-variant-numeric:tabular-nums}
 .game-title{color:var(--scene-ink,#355466)}.game-title p{color:var(--scene-ink,#355466)}
 .garden-chat{padding-bottom:22px;margin-bottom:24px;border-bottom:1px solid var(--line);scroll-margin-top:18px}
 .garden-chat .suggestions{gap:6px}.garden-chat .suggestions button{background:#edf0e1;color:#526547;font-size:11px;padding:8px}.garden-chat .suggestions button:hover{background:#e1e8d1}

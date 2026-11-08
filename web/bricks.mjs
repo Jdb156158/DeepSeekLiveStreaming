@@ -254,7 +254,7 @@ function bgmPick() {
   return BGM.queue.shift()||BGM.tracks?.[0]||{src:BGM.fallback};
 }
 async function bgmLoadList() {
-  const own={src:BGM.fallback,start:BGM.start,end:BGM.end};
+  const own={src:BGM.fallback,label:'我的歌',start:BGM.start,end:BGM.end};
   try {
     const response=await fetch(BGM.list,{cache:'no-store'});
     if(!response.ok) throw new Error('no index');
@@ -262,7 +262,7 @@ async function bgmLoadList() {
     // Each entry is {file, start, end}; a track may use its own slice or the default one.
     const files=(Array.isArray(data.tracks)?data.tracks:[])
       .filter(item=>item&&item.file&&BGM_PLAYABLE.test(item.file))
-      .map(item=>({src:BGM.playlist+encodeURIComponent(item.file),
+      .map(item=>({src:BGM.playlist+encodeURIComponent(item.file),label:item.file.replace(/\.mp3$/i,''),
         start:Number.isFinite(item.start)?item.start:BGM.start,
         end:Number.isFinite(item.end)?item.end:BGM.end}));
     // The operator's own track goes in as one more entry.
@@ -271,12 +271,61 @@ async function bgmLoadList() {
     BGM.tracks=[own];
   }
   BGM.queue=bgmShuffle(BGM.tracks);
+  bgmRenderList();
+}
+// Console list: every entry is a button so the operator can jump to a track by hand.
+function bgmRenderList() {
+  const list=$('music-list');
+  if(!list) return;
+  list.textContent='';
+  for(const track of BGM.tracks||[]) {
+    const button=document.createElement('button');
+    button.type='button';button.className='music-item';button.dataset.src=track.src||'';
+    button.setAttribute('role','option');button.setAttribute('aria-selected','false');
+    button.title=track.label||'';
+    const name=document.createElement('span');name.className='music-name';name.textContent=track.label||track.src;
+    const note=document.createElement('span');note.className='music-len';
+    const seconds=Number.isFinite(track.end)?track.end-(track.start||0):0;
+    note.textContent=seconds>0?`${Math.floor(seconds/60)}:${String(Math.round(seconds%60)).padStart(2,'0')}`:'';
+    button.append(name,note);
+    button.addEventListener('click',()=>bgmPlay(track));
+    list.append(button);
+  }
+  if($('music-count')) $('music-count').textContent=`${BGM.tracks?.length||0} 首`;
+  bgmMarkCurrent({src:BGM.current});
+}
+// Highlight the track that is actually playing and keep it visible inside the list.
+function bgmMarkCurrent(track) {
+  const list=$('music-list');
+  if(!list) return;
+  const src=track?.src||'';
+  let active=null;
+  list.querySelectorAll('.music-item').forEach(item=>{
+    const on=!!src&&item.dataset.src===src;
+    item.setAttribute('aria-selected',String(on));
+    if(on) active=item;
+  });
+  const label=(BGM.tracks||[]).find(item=>item.src===src)?.label;
+  if($('music-title')) $('music-title').textContent=src?(label||'未知曲目'):'尚未开始';
+  if(active&&list.scrollHeight>list.clientHeight+8) {
+    const top=active.offsetTop-list.offsetTop;
+    if(top<list.scrollTop||top+active.offsetHeight>list.scrollTop+list.clientHeight) {
+      list.scrollTop=top-list.clientHeight/2+active.offsetHeight/2;
+    }
+  }
 }
 function bgmStart() {
   if(BGM.element) return;
   bgmLoadList().then(()=>bgmPlayNext());
 }
-function bgmPlayNext() {
+// Manual pick from the console list: jump straight to that track, then keep shuffling from there.
+function bgmPlay(track) {
+  if(!track) return;
+  BGM.queue=(BGM.tracks||[]).filter(item=>item!==track);
+  BGM.queue=bgmShuffle(BGM.queue);
+  bgmPlayNext(track);
+}
+function bgmPlayNext(explicit) {
   const wasLooping=!!BGM.element;
   if(BGM.element) {
     // Detach listeners first: clearing src fires `error` on some builds, which would re-enter here.
@@ -288,8 +337,9 @@ function bgmPlayNext() {
     old.src='';
     old.load?.();
   }
-  const pick=bgmPick(),src=typeof pick==='string'?{src:pick,start:BGM.start,end:BGM.end}:pick;
+  const pick=explicit??bgmPick(),src=typeof pick==='string'?{src:pick,start:BGM.start,end:BGM.end}:pick;
   BGM.current=src.src;
+  bgmMarkCurrent(src);
   const audio=new Audio(src.src);
   audio.loop=false;audio.volume=0;audio.preload='auto';
   BGM.element=audio;
@@ -297,7 +347,7 @@ function bgmPlayNext() {
   const start=Math.max(0,src.start),end=Math.max(start+5,src.end);
   audio.addEventListener('loadedmetadata',()=>{ if(start>0&&start<audio.duration) audio.currentTime=start; });
   audio.addEventListener('timeupdate',()=>{ if(audio.currentTime>=end||audio.currentTime<start-1) audio.currentTime=start; });
-  audio.addEventListener('ended',bgmPlayNext);
+  audio.addEventListener('ended',()=>bgmPlayNext());
   // A failed track skips ahead, but never in a tight loop: after 3 misses in a row, retry later.
   audio.addEventListener('error',()=>{
     if(BGM.element!==audio||!audio.src) return;
@@ -325,6 +375,16 @@ function bgmRampTo(target) {
     if(ratio>=1) clearInterval(BGM.ramp);
   },step);
 }
+// Console: skip to another random track, or start the music from the list itself.
+$('music-next')?.addEventListener('click',()=>{
+  if(BGM.element) bgmPlayNext(); else bgmStart();
+  if($('music-feedback')) $('music-feedback').textContent='已换成下一首。';
+});
+// Fill the console list before the first click so the operator can pick a track right away.
+bgmLoadList().then(()=>{
+  if(!$('music-feedback')) return;
+  $('music-feedback').textContent=BGM.element?'点一首直接切换。':'点“开启声音”后开始播放，也可以直接点一首。';
+});
 // Talk state: dip the music while a speech clip is audible, restore it afterwards.
 let bgmTalking=false;
 function bgmSetTalking(talking) {
