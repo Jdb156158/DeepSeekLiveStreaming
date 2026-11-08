@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>大肥鱼的直播间</title>
   <link rel="stylesheet" href="/style.css?v=20261108-camwin">
-  <link rel="stylesheet" href="/bricks.css?v=20261108-miniright">
+  <link rel="stylesheet" href="/bricks.css?v=20261108-guidebold3">
   <script src="/vendor/live2dcubismcore.min.js"></script>
   <script src="/vendor/pixi.min.js"></script>
   <script src="/vendor/cubism4.min.js"></script>
@@ -44,21 +44,24 @@
     .live-cam[hidden]{display:none}
     .live-cam video{width:100%;height:100%;object-fit:cover;display:block;border-radius:10px;background:#000;transform:scaleX(-1)}
     @media(max-width:760px){.live-cam{width:18%;border-radius:12px;left:2.5%;transform:translateY(calc(-1 * var(--cam-lift,24px)))}}
-    .live-guide{position:absolute;z-index:6;right:3%;top:3.5%;max-width:230px;padding:10px 13px 11px;
+    /* Darker glass than the stats board: this panel sits over bright candy scenery and its small text
+       washed out at .52 opacity with weight 400. */
+    .live-guide{position:absolute;z-index:6;right:3%;top:3.5%;max-width:250px;padding:11px 14px 12px;
       border-radius:14px;color:#fff;
-      background:rgba(24,32,58,.52);
-      -webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);
-      border:1px solid rgba(255,255,255,.28);
-      box-shadow:0 6px 22px rgba(20,30,60,.22);pointer-events:none}
-    .live-guide-title{margin:0 0 7px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.2);
-      font-size:12px;font-weight:700;color:#fff;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.25)}
-    .live-guide dl{margin:0;display:grid;gap:5px}
-    .live-guide dl div{display:flex;gap:6px;align-items:flex-start}
-    .live-guide dt{flex:0 0 auto;padding:0 5px;border-radius:5px;background:rgba(255,255,255,.2);
-      color:#fff;font-size:9px;font-weight:600;line-height:1.6}
-    .live-guide dd{margin:0;color:#fff;font-size:10.5px;line-height:1.55;text-shadow:0 1px 2px rgba(0,0,0,.22)}
-    @media(max-width:760px){.live-guide{max-width:150px;padding:8px 10px;top:13%}
-      .live-guide dd{font-size:9px}.live-guide dt{font-size:8px}}
+      background:rgba(18,24,46,.78);
+      -webkit-backdrop-filter:blur(16px) saturate(130%);backdrop-filter:blur(16px) saturate(130%);
+      border:1px solid rgba(255,255,255,.34);
+      box-shadow:0 8px 26px rgba(12,18,40,.36);pointer-events:none}
+    .live-guide-title{margin:0 0 8px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.28);
+      font-size:14px;font-weight:800;color:#fff;letter-spacing:.03em;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+    .live-guide dl{margin:0;display:grid;gap:7px}
+    .live-guide dl div{display:flex;gap:8px;align-items:flex-start;justify-content:flex-start}
+    .live-guide dt{flex:0 0 auto;padding:1px 7px;border-radius:6px;background:rgba(255,255,255,.94);
+      color:#1b2340;font-size:11px;font-weight:800;line-height:1.6}
+    .live-guide dd{flex:1;min-width:0;margin:0;text-align:left;color:#fff;font-size:12.5px;font-weight:600;line-height:1.5;
+      text-shadow:0 1px 3px rgba(0,0,0,.55)}
+    @media(max-width:760px){.live-guide{max-width:170px;padding:9px 11px;top:13%}
+      .live-guide dd{font-size:10.5px}.live-guide dt{font-size:9.5px}.live-guide-title{font-size:12px}}
     .live-stats{position:absolute;z-index:6;left:3%;top:3.5%;min-width:150px;padding:10px 13px 11px;
       border-radius:14px;color:#fff;
       background:rgba(24,32,58,.52);
@@ -153,7 +156,7 @@
           <dl>
             <div><dt>玩法</dt><dd>砖倒了，大肥鱼起身一块块扶好</dd></div>
             <div><dt>聊天</dt><dd>发文字问本鱼，她会用声音回答</dd></div>
-            <div><dt>短句</dt><dd>一句话就好，像「你好呀」「累不累」</dd></div>
+            <div><dt>短句</dt><dd>一句话就行，像「你好呀」</dd></div>
             <div><dt>推砖</dt><dd>发「1」～「6」推倒对应那排</dd></div>
           </dl>
         </div>
