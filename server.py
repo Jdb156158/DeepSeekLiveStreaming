@@ -40,6 +40,11 @@ async def index(request):
     return web.FileResponse(ROOT / "web/index.html")
 
 
+async def live(request):
+    # Same courtyard page without the control console, for 直播伴侣/OBS window capture.
+    return web.FileResponse(ROOT / "web/bricks.html")
+
+
 async def status(request):
     ready = False
     async with ClientSession(timeout=ClientTimeout(total=2)) as session:
@@ -176,18 +181,124 @@ async def socket(request):
     return connection
 
 
+# ---- 弹幕输入：Dycast Desktop 通过 WebSocket 转发结构化消息到 127.0.0.1:8765 ----------
+# Dycast first sends one live-room object, then arrays of DyMessage batches. Only chat text is fed
+# to the game/chat pipeline; everything else is counted but not acted on.
+DANMAKU = {"connected": False, "room": None, "received": 0, "accepted": 0, "last_error": None}
+DANMAKU_CLIENTS = set()
+# Same text from the same user inside this window is treated as one message.
+DANMAKU_DEDUPE_SECONDS = 8
+# Accepted danmaku wait here until a page polls them, so the console and /live both react even though
+# the courtyard page only talks HTTP. Bursts beyond the cap are dropped rather than queued forever.
+DANMAKU_PENDING = []
+DANMAKU_PENDING_MAX = 40
+DANMAKU_SEEN = {}
+
+
+def danmaku_norm(text):
+    return " ".join(str(text or "").split())
+
+
+def danmaku_feed(message):
+    """Turn one Dycast message into a game/chat event. Returns the accepted payload or None."""
+    method = str(message.get("method") or "")
+    if method not in ("WebcastChatMessage", "WebcastEmojiChatMessage"):
+        return None
+    user = message.get("user") or {}
+    name = str(user.get("name") or "观众")[:24]
+    text = danmaku_norm(message.get("content"))
+    if not text:
+        return None
+    now = asyncio.get_running_loop().time()
+    key = (name, text)
+    if now - DANMAKU_SEEN.get(key, -1e9) < DANMAKU_DEDUPE_SECONDS:
+        return None
+    DANMAKU_SEEN[key] = now
+    if len(DANMAKU_SEEN) > 400:
+        for stale, stamp in list(DANMAKU_SEEN.items()):
+            if now - stamp > DANMAKU_DEDUPE_SECONDS * 4:
+                DANMAKU_SEEN.pop(stale, None)
+    return {"type": "danmaku", "method": method, "user": name, "text": text}
+
+
+def danmaku_publish(event):
+    """Count an accepted message and hand it to whatever page asks for it next."""
+    DANMAKU["accepted"] += 1
+    if len(DANMAKU_PENDING) >= DANMAKU_PENDING_MAX:
+        DANMAKU["last_error"] = "弹幕太快，已丢弃一条。"
+        return
+    DANMAKU_PENDING.append(event)
+
+
+async def danmaku(request):
+    connection = web.WebSocketResponse(heartbeat=20)
+    await connection.prepare(request)
+    DANMAKU_CLIENTS.add(connection)
+    DANMAKU.update({"connected": True, "last_error": None})
+    try:
+        async for frame in connection:
+            if frame.type != web.WSMsgType.TEXT:
+                continue
+            try:
+                payload = json.loads(frame.data)
+            except ValueError:
+                continue
+            items = payload if isinstance(payload, list) else [payload]
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                if item.get("roomId") and not item.get("method"):
+                    DANMAKU["room"] = {"name": str(item.get("nickname") or "")[:40],
+                        "title": str(item.get("title") or "")[:80], "status": item.get("status")}
+                    continue
+                DANMAKU["received"] += 1
+                event = danmaku_feed(item)
+                if event:
+                    danmaku_publish(event)
+    finally:
+        DANMAKU_CLIENTS.discard(connection)
+        if not DANMAKU_CLIENTS:
+            DANMAKU["connected"] = False
+    return connection
+
+
+async def danmaku_status(request):
+    return web.json_response({**DANMAKU, "queued": len(DANMAKU_PENDING)})
+
+
+async def danmaku_poll(request):
+    """Hand pending danmaku to the courtyard page, oldest first, then clear the queue."""
+    items, DANMAKU_PENDING[:] = DANMAKU_PENDING[:], []
+    return web.json_response({"items": items})
+
+
 def main():
     AUDIO.mkdir(parents=True, exist_ok=True)
     # Generated previews are temporary and never committed.
     for old in AUDIO.iterdir():
         old.unlink()
     app = web.Application(client_max_size=16 * 1024)
-    app.add_routes([web.get("/", index), web.get("/stage", index), web.get("/api/status", status),
+    app.add_routes([web.get("/", index), web.get("/stage", index), web.get("/live", live), web.get("/api/status", status),
+        web.get("/api/danmaku/status", danmaku_status),
+        web.get("/api/danmaku/poll", danmaku_poll),
         web.post("/api/settings", configure), web.post("/api/chat", chat), web.post("/api/stop", stop),
         web.post("/api/game/voice", game_voice), web.get("/ws", socket)])
     app.router.add_static("/audio/", AUDIO)
     app.router.add_static("/", ROOT / "web", show_index=False)
-    web.run_app(app, host="127.0.0.1", port=18080, print=lambda message: print(message, flush=True))
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    async def start_feed():
+        # Separate loopback app so Dycast can forward to ws://127.0.0.1:8765 without touching the page socket.
+        feed = web.Application(client_max_size=256 * 1024)
+        feed.add_routes([web.get("/", danmaku), web.get("/api/danmaku/status", danmaku_status)])
+        runner = web.AppRunner(feed)
+        await runner.setup()
+        await web.TCPSite(runner, "127.0.0.1", 8765).start()
+        print("弹幕接收已监听 ws://127.0.0.1:8765", flush=True)
+
+    loop.create_task(start_feed())
+    web.run_app(app, host="127.0.0.1", port=18080, loop=loop, print=lambda message: print(message, flush=True))
 
 
 if __name__ == "__main__":

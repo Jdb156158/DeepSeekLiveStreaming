@@ -6,12 +6,15 @@
 .garden-room .top-actions{gap:10px}.garden-room .top-actions>a{font-size:12px;color:#586e55;text-underline-offset:4px;margin-right:8px}
 .garden-room button{border-radius:11px}.garden-room .secondary{background:#e6eddc;color:#506449}.garden-room .secondary:hover{background:#d8e4c9}.garden-room .primary{background:#b5543c;color:#fffef7}.garden-room .primary:hover{background:#91412f}.garden-room button:focus-visible,.garden-room input:focus-visible,.garden-room summary:focus-visible,.garden-room a:focus-visible{outline-color:#9a583d}.garden-room ::selection{background:#f0c5a4;color:#4e473e}
 .brick-workspace{max-width:1260px;margin:0 auto;padding:22px 26px;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:26px;align-items:start}
-.game-preview{width:100%;max-width:calc(100vh - 142px);justify-self:center;background:#fffdf6;padding:8px 8px 0;border-radius:24px;box-shadow:0 7px 26px #545c3d0d}
-.brick-stage{position:relative;isolation:isolate;width:100%;aspect-ratio:1;height:auto;min-height:0;overflow:hidden;border-radius:18px;background:#f8d4a7}
+.game-preview{width:100%;max-width:none;justify-self:stretch;background:transparent;padding:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;height:calc(100vh - 142px);max-height:calc(100vh - 142px);gap:0;overflow:hidden}
+/* The console mirrors the live frame: square courtyard on top, reserved below. */
+.game-preview .brick-stage{border-radius:0;flex:0 0 auto;aspect-ratio:1 / 1}
+.game-preview .stage-lower{flex:1 1 auto;min-height:0;width:100%;aspect-ratio:auto;border-radius:0;background:linear-gradient(#f8e3c4,#efd7b3)}
+.brick-stage{container-type:inline-size;position:relative;isolation:isolate;width:100%;aspect-ratio:1;height:auto;min-height:0;overflow:hidden;border-radius:18px;background:#f8d4a7}
 #game-board{position:absolute;inset:0;width:100%;height:100%}
 .game-title{position:absolute;z-index:2;left:39%;top:5%;color:#355466;pointer-events:none;text-align:center;transform:rotate(-3deg)}
-.game-title h2{font-family:"Garden Happy",sans-serif;font-weight:400;font-size:clamp(27px,3.3vw,46px);line-height:1.12;letter-spacing:.025em;margin:0;text-shadow:0 2px 0 #fff9e5;paint-order:stroke fill;-webkit-text-stroke:3px #fff7e5}
-.game-title p{font-size:clamp(11px,1vw,13px);font-weight:550;line-height:1.5;margin:10px -30px 0;color:#355466;text-shadow:0 1px 2px #fffbe5;background:#fff7e6df;padding:3px 9px;border-radius:9px}
+.game-title h2{font-family:"Garden Happy",sans-serif;font-weight:400;font-size:clamp(18px,5.6cqi,46px);line-height:1.12;letter-spacing:.025em;margin:0;text-shadow:0 2px 0 #fff9e5;paint-order:stroke fill;-webkit-text-stroke:3px #fff7e5}
+.game-title p{font-size:clamp(10px,2.2cqi,13px);font-weight:550;line-height:1.5;margin:10px -30px 0;color:#355466;text-shadow:0 1px 2px #fffbe5;background:#fff7e6df;padding:3px 9px;border-radius:9px}
 .game-local{position:absolute;right:13px;top:13px;padding:6px 9px;border-radius:7px;background:#fffbeeeb;color:#596c54;z-index:3;font-size:11px;line-height:1.3}
 .brick-controls{background:#fffdf6;box-shadow:0 6px 22px #545c3d0a;border-radius:20px;padding:25px 23px;min-width:0}
 .brick-controls h2{font-family:"Garden Happy",sans-serif;font-size:22px;letter-spacing:0;font-weight:400;line-height:1.3}.brick-controls .tag{background:#eef1df;color:#65714e;font-size:11px;padding:5px 8px;border-radius:6px}
@@ -32,8 +35,8 @@
 .fish-bubble:after{content:"";position:absolute;left:16px;bottom:-6px;width:13px;height:13px;border-radius:2px;background:#fffaf0;transform:rotate(45deg)}
 .board-loading,.paused-overlay{position:absolute;inset:0;z-index:5;display:grid;place-content:center;text-align:center;background:#f6eddaeb;color:#5e7053;font-family:"Garden Happy",sans-serif;font-size:25px;line-height:1.7}.paused-overlay{background:#f7eddae8;font-size:35px}.paused-overlay span{font-family:-apple-system,"PingFang SC",sans-serif;font-size:13px}.board-loading[hidden],.paused-overlay[hidden],.fish-bubble[hidden]{display:none}
 @media(min-width:1450px){.brick-workspace{max-width:1420px;grid-template-columns:minmax(0,1fr) 350px;gap:30px}.brick-controls{padding:28px}.lane-button{min-height:94px}}
-@media(max-width:1020px){.garden-room h1 span{display:none}.brick-workspace{grid-template-columns:minmax(0,1fr) 300px;gap:18px;padding:18px}.brick-controls{padding:22px 18px}.game-title h2{font-size:clamp(24px,3.6vw,39px)}.game-title p{margin-top:7px;font-size:11px}.game-local{font-size:11px;padding:5px 7px}.game-preview{padding:6px 6px 0}.lane-button{min-height:83px}.brick-controls h2{font-size:20px}.brick-controls .tag{font-size:11px}}
-@media(max-width:760px){.garden-room .topbar{padding:14px 16px;min-height:0;gap:13px;flex-wrap:wrap}.garden-room h1{font-size:22px}.garden-room .top-actions{width:100%;justify-content:space-between;gap:8px}.garden-room .top-actions>a{margin:0}.brick-workspace{display:block;padding:14px;max-width:650px}.game-preview{max-width:none}.brick-stage{border-radius:16px}.brick-controls{margin-top:16px;padding:24px}.game-title h2{font-size:clamp(25px,6.2vw,39px)}.game-title p{font-size:clamp(11px,2.3vw,12px);margin:8px -20px 0}.game-local{display:none}.game-caption span{font-size:12px;padding:6px 13px}.game-caption{bottom:3%}.fish-bubble{font-size:12px;max-width:175px;padding:9px 12px}.lane-button{min-height:92px}.brick-controls h2{font-size:22px}.brick-controls .tag{font-size:11px}.game-preview .preview-footer{font-size:11px;padding:9px 5px 10px}}
+@media(max-width:1020px){.garden-room h1 span{display:none}.brick-workspace{grid-template-columns:minmax(0,1fr) 300px;gap:18px;padding:18px}.brick-controls{padding:22px 18px}.game-title h2{font-size:clamp(18px,5.6cqi,39px)}.game-title p{margin-top:7px;font-size:11px}.game-local{font-size:11px;padding:5px 7px}.game-preview{padding:6px 6px 0}.lane-button{min-height:83px}.brick-controls h2{font-size:20px}.brick-controls .tag{font-size:11px}}
+@media(max-width:760px){.garden-room .topbar{padding:14px 16px;min-height:0;gap:13px;flex-wrap:wrap}.garden-room h1{font-size:22px}.garden-room .top-actions{width:100%;justify-content:space-between;gap:8px}.garden-room .top-actions>a{margin:0}.brick-workspace{display:block;padding:14px;max-width:650px}.game-preview{max-width:none}.brick-stage{border-radius:16px}.brick-controls{margin-top:16px;padding:24px}.game-title h2{font-size:clamp(18px,6cqi,39px)}.game-title p{font-size:clamp(11px,2.6cqi,12px);margin:8px -20px 0}.game-local{display:none}.game-caption span{font-size:12px;padding:6px 13px}.game-caption{bottom:3%}.fish-bubble{font-size:12px;max-width:175px;padding:9px 12px}.lane-button{min-height:92px}.brick-controls h2{font-size:22px}.brick-controls .tag{font-size:11px}.game-preview .preview-footer{font-size:11px;padding:9px 5px 10px}}
 @media(prefers-reduced-motion:reduce){.lane-button{transition:none}.lane-button:hover{transform:none}}
 .scene-settings{padding-bottom:21px;margin-bottom:23px;border-bottom:1px solid var(--line)}
 .scene-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
@@ -52,4 +55,12 @@
 .chat-feedback-row{display:flex;align-items:flex-start;gap:8px;margin-top:12px}.chat-feedback-row .feedback{flex:1;min-width:0;margin:0;min-height:38px}.garden-chat .text-button{color:#91412f;white-space:nowrap;font-size:11px}.garden-chat .text-button:disabled{opacity:1;color:#6a745e;cursor:default}
 .chat-settings{margin-top:12px;padding-top:12px;border-color:var(--line)}.chat-settings summary{color:#526547}.chat-settings .settings-note{font-size:11px;color:#667158}.chat-settings form{display:grid;gap:8px;padding-top:6px}.chat-settings label{font-size:12px;color:#5e6b52}.chat-settings input,.chat-settings select{width:100%;min-width:0;padding:9px;border:1px solid #b9c4a7;border-radius:8px;background:#fffefa;color:#4e5745}.chat-settings button{justify-self:start;font-size:12px}
 .game-caption[data-chat="true"] span{white-space:normal;overflow-wrap:anywhere;text-overflow:clip;line-height:1.55}
-@media(min-width:761px){.game-preview{position:sticky;top:18px}}
+/* Desktop: the top bar and the courtyard stay put; only the control console scrolls. */
+@media(min-width:1021px){
+  .garden-room{height:100vh;overflow:hidden;display:flex;flex-direction:column}
+  .garden-room .topbar{flex:0 0 auto}
+  .brick-workspace{flex:1 1 auto;min-height:0;align-items:stretch;width:100%}
+  .brick-workspace .game-preview{align-self:start}
+  .brick-workspace .brick-controls{height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-color:#bcc9a8 #f4f4e9}
+}
+@media(max-width:1020px){.brick-workspace .brick-controls{max-height:none}}

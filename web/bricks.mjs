@@ -1,5 +1,5 @@
-import {DominoGame, ROW_SPACING, BRICK_SPACING, BRICK_HEIGHT, BRICK_WIDTH, BRICK_THICKNESS} from './domino-engine.mjs?v=20261107-audio';
-import {SCENES} from './scenes.mjs';
+import {DominoGame, ROW_SPACING, BRICK_SPACING, ROW_Z_ORIGIN, BRICK_HEIGHT, BRICK_WIDTH, BRICK_THICKNESS} from './domino-engine.mjs?v=20261108-moveback2';
+import {SCENES} from './scenes.mjs?v=20261108-markers';
 import {repairPose,squatVertices,seatedVertices} from './repair-motion.mjs';
 
 const $ = id => document.getElementById(id);
@@ -7,8 +7,11 @@ const COLORS = [0xef947e, 0xe6bd63, 0x83b9a0, 0x90b5d1, 0xb5a2ce, 0xe6a4b6];
 const PHASES = {standing:'已就位', falling:'正在倒下', waiting:'排队等扶', repairing:'正在扶砖'};
 const game = new DominoGame();
 const host = $('brick-stage');
+// The live page is captured by 直播伴侣 and then scaled to the stream size, so render it at a higher
+// pixel ratio; a 2x buffer on a 480px window gets blown up and looks soft on stream.
+const isLivePage=location.pathname.replace(/\/+$/,'')==='/live';
 const app = new PIXI.Application({view:$('game-board'),resizeTo:host,backgroundAlpha:0,antialias:true,
-  autoDensity:true,resolution:2});
+  autoDensity:true,resolution:isLivePage?Math.max(3,window.devicePixelRatio||1):2});
 const world = new PIXI.Container();
 const garden = PIXI.Sprite.from('/art/garden-courtyard.png');
 garden.width=1000;garden.height=1000;
@@ -64,9 +67,41 @@ const stoolShadow=new PIXI.Graphics();
 stoolShadow.beginFill(0x233c62,.055).drawEllipse(155,831,57,14).endFill();
 stoolShadow.beginFill(0x233c62,.08).drawEllipse(153,829,42,8).endFill();stoolShadow.zIndex=828;
 pieces.addChild(stoolShadow,parasol,stool);
-world.addChild(garden,scenery,pieces);
+// Claude-chan only dances in the back; she never talks or takes part in the brick rules.
+// The brick rows are short, so a dancer drawn behind them at ground level would be hidden by the
+// bricks. She is anchored on the painted back ground area instead (behind every brick and the fish),
+// so the clear path stays readable and the depth still looks right.
+const CLAUDE_DANCE={x:330,height:178,beat:0.5,frames:11,blend:0.22,
+  // Lowest opaque row of each dance_XX.webp as a fraction of the texture height (1 = bottom edge).
+  // The poses sit on different canvas heights, so each frame is planted by its own feet instead of its box.
+  ground:[.9786,.9764,.9841,.9612,.9614,.9793,.9807,.9726,.9610,.9698,.9748]};
+const claudeShadow=new PIXI.Graphics(),claudeDancer=new PIXI.Container();
+const claudeFrames=[...Array(CLAUDE_DANCE.frames)].map((_,index)=>PIXI.Sprite.from(`/art/claude-chan/dance_${String(index).padStart(2,'0')}.webp`));
+for(const sprite of claudeFrames) {
+  sprite.anchor.set(.5,1);sprite.visible=false;
+  claudeDancer.addChild(sprite);
+}
+// Gemini-chan stands on Claude's right. Single ilustration, so she animates with code: a gentle
+// swing, breathing and a slow bob; she never talks and never joins the brick rules.
+// Standing still characters beside the dancer. Each owns one painting and breathes, sways and
+// bobs on its own phase; they share the back row with Claude so the whole group reads as one line.
+// Defaults used when a scene does not override them; every scene can set its own cast layout.
+const CAST_DEFAULT={claude:{x:330,y:430},gemini:{x:462,y:430},gpt:{x:594,y:430},qwen:{x:726,y:430}};
+const STANDERS=[
+  {id:'gemini',file:'/art/gemini-chan/gemini-stand.webp',height:206,phase:0},
+  {id:'gpt',file:'/art/gpt-chan/gpt-stand.webp',height:210,phase:1.7},
+  {id:'qwen',file:'/art/qwen-chan/qwen-stand.webp',height:212,phase:3.1}
+];
+for(const girl of STANDERS) {
+  girl.sprite=PIXI.Sprite.from(girl.file);
+  girl.sprite.anchor.set(.5,1);
+  girl.shadow=new PIXI.Graphics();
+}
+// Drawn between the painted ground and the scenery/pieces layers so the bricks and fish stay in front.
+world.addChild(garden,claudeShadow,claudeDancer,...STANDERS.flatMap(girl=>[girl.shadow,girl.sprite]),scenery,pieces);
 app.stage.addChild(world);
 let model, naturalHeight, soundOn = false, audioContext, speechAudio, analyser;
+let hideBricks = false;
 let voiceBusy = false, voiceGeneration = 0, mouth = 0, bubbleUntil = 0, lastPanelUpdate = 0;
 let chatPending=false,chatPlaying=false,chatRequest=0,chatCaptionUntil=0;
 const audioOwnership=new BroadcastChannel('fish-preview-audio'),audioPageId=crypto.randomUUID();
@@ -96,18 +131,21 @@ function shade(color, factor) {
 function drawGround() {
   scenery.clear();
   // The background ground and all objects share one world, without a raised board.
+  if(hideBricks) return;
   for(const row of game.rows) {
     const x=(row.id-1)*ROW_SPACING;
     for(let j=0;j<row.bricks.length;j++) {
-      const p=project(x,j*BRICK_SPACING);
+      const p=project(x,ROW_Z_ORIGIN+j*BRICK_SPACING);
       scenery.beginFill(0xad7751,.07).drawEllipse(p.x,p.y+2,36*p.scale,10*p.scale).endFill();
     }
   }
 }
 drawGround();
 await document.fonts.load('27px "Garden Happy"');
+const markersLayer=new PIXI.Container();
+world.addChild(markersLayer);
 for(let i=0;i<6;i++) {
-  const p=project(i*ROW_SPACING,-.54,.015);
+  const p=project(i*ROW_SPACING,ROW_Z_ORIGIN,.015);
   const marker=new PIXI.Graphics();
   marker.beginFill(0x9b714c,.16).drawEllipse(p.x,p.y+13,28,8).endFill();
   marker.lineStyle(2,0xfff7df,1).beginFill(COLORS[i]).drawRoundedRect(p.x-24,p.y-19,48,40,12).endFill();
@@ -116,7 +154,7 @@ for(let i=0;i<6;i++) {
   marker.on('pointertap',()=>submit(`${i+1}号倒`));
   const label=new PIXI.Text(String(i+1),{fontFamily:'Garden Happy, sans-serif',fontSize:27,fontWeight:'400',fill:0x594b3c});
   label.anchor.set(.5,.5);label.position.set(p.x,p.y-1);
-  world.addChild(marker,label);
+  markersLayer.addChild(marker,label);
 }
 const shadow=new PIXI.Graphics();
 pieces.addChild(shadow);
@@ -140,7 +178,7 @@ function fit() {
 new ResizeObserver(fit).observe(host);fit();
 
 function drawBrick(row,index) {
-  const x=(row.id-1)*ROW_SPACING,z=index*BRICK_SPACING;
+  const x=(row.id-1)*ROW_SPACING,z=ROW_Z_ORIGIN+index*BRICK_SPACING;
   const angle=row.bricks[index].angle;
   const point=(side,h,depth)=>project(x+side,z+depth*Math.cos(angle)+h*Math.sin(angle),h*Math.cos(angle)-depth*Math.sin(angle)+.003);
   const verts=[];
@@ -186,6 +224,40 @@ function bubble(text,seconds=3.5) {
   $('game-caption').textContent=text;
   bubbleUntil=game.time+seconds;
 }
+// Background music: one looping track, kept low and dipped while the fish is talking.
+// It never goes through the mouth analyser, so it cannot drive the lip sync.
+const BGM={src:'/media/bgm.mp3',volume:.16,ducked:.05,fade:0.25,element:null,playing:false,ramp:null};
+function bgmStart() {
+  if(BGM.element) return;
+  const audio=new Audio(BGM.src);
+  audio.loop=true;audio.volume=0;audio.preload='auto';
+  BGM.element=audio;
+  // Autoplay needs a user gesture; enableSound() is always reached from one.
+  audio.play().then(()=>{
+    BGM.playing=true;
+    bgmRampTo(BGM.volume);
+  }).catch(()=>{BGM.playing=false;BGM.element=null;});
+}
+// Ease the volume instead of jumping, so ducking does not sound like a glitch.
+function bgmRampTo(target) {
+  if(!BGM.element) return;
+  const audio=BGM.element,from=audio.volume,steps=10,step=BGM.fade*1000/steps;
+  clearInterval(BGM.ramp);
+  let count=0;
+  BGM.ramp=setInterval(()=>{
+    count++;
+    const ratio=Math.min(1,count/steps);
+    audio.volume=Math.max(0,Math.min(1,from+(target-from)*ratio));
+    if(ratio>=1) clearInterval(BGM.ramp);
+  },step);
+}
+// Talk state: dip the music while a speech clip is audible, restore it afterwards.
+let bgmTalking=false;
+function bgmSetTalking(talking) {
+  if(talking===bgmTalking) return;
+  bgmTalking=talking;
+  bgmRampTo(talking?BGM.ducked:BGM.volume);
+}
 function tone(frequency,length=.06,volume=.04) {
   if(!soundOn || game.paused) return;
   const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
@@ -198,7 +270,7 @@ function tone(frequency,length=.06,volume=.04) {
 function stopVoice() {
   voiceGeneration++;
   if(speechAudio) {speechAudio.onended=null;speechAudio.onerror=null;speechAudio.ontimeupdate=null;speechAudio.pause();speechAudio.src='';speechAudio=null;}
-  analyser=null;mouth=0;voiceBusy=false;
+  analyser=null;mouth=0;voiceBusy=false;bgmSetTalking(false);
   if(chatPlaying)finishChat(chatRequest,'声音已停止，回复保留在聊天记录里。');
 }
 async function say(text) {
@@ -214,9 +286,10 @@ async function say(text) {
     analyser=audioContext.createAnalyser();analyser.fftSize=256;
     const source=audioContext.createMediaElementSource(speechAudio);
     source.connect(analyser);analyser.connect(audioContext.destination);
-    speechAudio.onended=()=>{if(ticket===voiceGeneration){voiceBusy=false;mouth=0;analyser=null;}};
-    speechAudio.onerror=()=>{voiceBusy=false;};
+    speechAudio.onended=()=>{if(ticket===voiceGeneration){voiceBusy=false;mouth=0;analyser=null;bgmSetTalking(false);}};
+    speechAudio.onerror=()=>{voiceBusy=false;bgmSetTalking(false);};
     await speechAudio.play();
+    bgmSetTalking(true);
     $('voice-feedback').textContent=data.voice+' · 固定短台词';
   } catch { $('voice-feedback').textContent='配音暂不可用，砖块音效和游戏继续。'; }
   finally {if(ticket===voiceGeneration && (!speechAudio || speechAudio.paused)) voiceBusy=false;}
@@ -226,6 +299,23 @@ async function enableSound() {
   // Some browsers never settle resume() without a real user gesture; do not block chat on it.
   await Promise.race([audioContext.resume(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('声音未就绪')),2000))]);
   soundOn=true;$('game-sound').textContent='声音已开启';audioOwnership.postMessage(audioPageId);
+  bgmStart();
+}
+// /live has no sound button: start the background music on the first click anywhere, and show a
+// one-line hint until the browser unlocks audio (it refuses to autoplay without a gesture).
+const liveMode=document.documentElement.classList.contains('live-mode');
+if(liveMode) {
+  const hint=document.createElement('div');
+  hint.id='live-audio-hint';hint.textContent='点击画面任意位置开启背景音乐';
+  hint.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:20;padding:8px 16px;border-radius:14px;background:#1c2a4af0;color:#eaf1ff;font-size:13px;box-shadow:0 4px 10px #00000040;cursor:pointer';
+  document.body.append(hint);
+  const unlock=async()=>{
+    try {await enableSound();} catch { /* keep the hint up; the next click retries */ }
+    if(BGM.element && BGM.playing) hint.remove(),document.removeEventListener('pointerdown',unlock);
+  };
+  document.addEventListener('pointerdown',unlock);
+  // A page reloaded from the bfcache or a tab that already had a gesture may play right away.
+  if(document.visibilityState==='visible') unlock();
 }
 $('game-sound').onclick=async()=>{
   if(soundOn){soundOn=false;stopVoice();$('game-sound').textContent='开启声音';return;}
@@ -260,7 +350,7 @@ function chatCaption(text) {
 }
 function finishChat(ticket,message,error=false) {
   if(ticket!==chatRequest)return;
-  chatPlaying=false;voiceBusy=false;analyser=null;mouth=0;
+  chatPlaying=false;voiceBusy=false;analyser=null;mouth=0;bgmSetTalking(false);
   setChatPending(false);chatCaptionUntil=performance.now()+5000;
   chatFeedback(message,error);
 }
@@ -289,10 +379,11 @@ async function sendChat() {
       const end=Math.max(1,Math.ceil(data.text.length*audio.currentTime/audio.duration));
       chatCaption(data.text.slice(Math.max(0,end-70),end));
     };
-    audio.onended=()=>{if(ticket===chatRequest){chatCaption(data.text.slice(-70));finishChat(ticket,'本鱼说完啦，还想聊什么？');}};
-    audio.onerror=()=>{if(ticket===chatRequest)finishChat(ticket,'回复已显示，语音播放失败，请再试一次。',true);};
+    audio.onended=()=>{if(ticket===chatRequest){bgmSetTalking(false);chatCaption(data.text.slice(-70));finishChat(ticket,'本鱼说完啦，还想聊什么？');}};
+    audio.onerror=()=>{if(ticket===chatRequest){bgmSetTalking(false);finishChat(ticket,'回复已显示，语音播放失败，请再试一次。',true);}};
     try {
       await audio.play();
+      bgmSetTalking(true);
       if(ticket!==chatRequest)return;
       chatPlaying=true;voiceBusy=true;setChatPending(true);chatFeedback('本鱼正在说话 · '+data.voice);
     } catch {finishChat(ticket,'回复已显示。浏览器拦住了声音，请点击“开启声音”后再发一句。',true);}
@@ -353,6 +444,77 @@ function submit(text) {
 $('brick-command-form').onsubmit=event=>{
   event.preventDefault();submit($('brick-command').value);
   $('brick-command').select();
+};
+
+// ---- 弹幕输入 ------------------------------------------------------------------------
+// Dycast Desktop forwards live chat to the backend; this page polls it. Brick commands act
+// immediately; anything else is treated as a viewer question and answered in the courtyard.
+let danmakuSince=null,danmakuMissing=0;
+const danmakuQueue=[];
+let danmakuBusy=false;
+async function pollDanmaku() {
+  try {
+    const response=await fetch('/api/danmaku/poll');
+    if(!response.ok) throw new Error();
+    const data=await response.json();
+    danmakuMissing=0;
+    const board=$('game-board');
+    board.dataset.danmaku=data.items.length>0?'1':board.dataset.danmaku;
+    for(const item of data.items) danmakuQueue.push(item);
+    void drainDanmaku();
+  } catch {
+    // Backend restarted or busy; the console of the page should not fill with errors.
+    danmakuMissing++;
+  }
+}
+async function drainDanmaku() {
+  if(danmakuBusy) return;
+  danmakuBusy=true;
+  try {
+    while(danmakuQueue.length) {
+      const item=danmakuQueue.shift();
+      const handled=handleDanmaku(item);
+      // Give the voice and the brick queue time to absorb one viewer message at a time.
+      if(handled) await wait(handled);
+    }
+  } finally {danmakuBusy=false;}
+}
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+function handleDanmaku(item) {
+  const text=String(item.text||'').trim();
+  if(!text) return 0;
+  const who=item.user||'观众';
+  const result=game.command(text);
+  if(result.ok) {
+    feedback(`${who}：${text} · ${result.message}`,false);
+    // Show the viewer and the row on the courtyard caption so /live viewers see who pushed.
+    const row=game.queue[game.queue.length-1];
+    if(row && !chatPending && performance.now()>=chatCaptionUntil) {
+      $('game-caption').parentElement.dataset.chat='false';
+      $('game-caption').textContent=`${who} 推倒了 ${row} 号砖！`;
+      bubbleUntil=performance.now()+2200;
+    }
+    updatePanels();
+    return 0;
+  }
+  if(chatPending) return 0; // one conversation at a time; the next poll delivers it later
+  // sendChat adds the message itself; prefix the viewer name so the log shows who asked.
+  $('garden-message').value=`${who} 说：${text}`;
+  sendChat();
+  return 1200;
+}
+setInterval(pollDanmaku,1500);
+$('game-hide-bricks').onclick=()=>{
+  hideBricks=!hideBricks;
+  markersLayer.visible=!hideBricks;
+  // Clear what is already drawn so the toggle takes effect immediately, not on the next frame.
+  for(const graphic of brickArt.flat()) graphic.clear();
+  drawGround();
+  shadow.clear();
+  spark.clear();
+  const button=$('game-hide-bricks');
+  button.textContent=hideBricks?'显示砖块':'隐藏砖块';
+  button.setAttribute('aria-pressed',String(hideBricks));
 };
 $('game-pause').onclick=()=>{
   game.paused=!game.paused;
@@ -462,7 +624,8 @@ app.ticker.add(()=>{
       bubble('终于扶完了，坐下刷会儿手机。',3);
     }
   }
-  for(const row of game.rows)for(let index=0;index<row.bricks.length;index++)drawBrick(row,index);
+  // Hidden bricks skip drawing entirely: the game keeps running, only the picture changes.
+  if(!hideBricks)for(const row of game.rows)for(let index=0;index<row.bricks.length;index++)drawBrick(row,index);
   const actor=game.actor,p=project(actor.x,actor.z);
   const bob=actor.phase==='moving'||actor.phase==='returning'?Math.abs(Math.sin(game.time*12))*1.3:0;
   const resting=actor.recline*actor.recline*(3-2*actor.recline);
@@ -481,7 +644,7 @@ app.ticker.add(()=>{
   } else phone.visible=false;
   spark.clear();
   if(actor.phase==='repairing') {
-    const point=project((actor.row-1)*ROW_SPACING,actor.brick*BRICK_SPACING,.65);
+    const point=project((actor.row-1)*ROW_SPACING,ROW_Z_ORIGIN+actor.brick*BRICK_SPACING,.65);
     const pulse=repairPose(actor.workTime).reach;
     spark.lineStyle(2,0xfff5ad,pulse);
     for(let i=0;i<4;i++) {
@@ -491,8 +654,55 @@ app.ticker.add(()=>{
     spark.zIndex=p.y+3;
   }
   if(!game.paused && game.time>bubbleUntil)$('fish-bubble').hidden=true;
+  updateDancer();
+  updateStanders();
   $('fish-bubble').style.left=`${Math.max(115,Math.min(host.clientWidth-115,offsetX+p.x*viewScale+40))}px`;
   $('fish-bubble').style.top=`${offsetY+(p.y-(276-46*resting)*p.scale)*viewScale}px`;
   if(performance.now()-lastPanelUpdate>120){updatePanels();lastPanelUpdate=performance.now();}
 });
+function updateDancer() {
+  const p=castSpot('claude');
+  // One key pose per beat; the beat is derived from game time so the dance runs without audio.
+  const step=Math.floor(game.time/CLAUDE_DANCE.beat), phase=game.time/CLAUDE_DANCE.beat-step;
+  const frames=CLAUDE_DANCE.frames;
+  const current=((step%frames)+frames)%frames, previous=((step-1)%frames+frames)%frames;
+  // The source art uses a short cross-fade plus a beat bob; the bob keeps the feet planted.
+  const fade=phase<CLAUDE_DANCE.blend?phase/CLAUDE_DANCE.blend:1;
+  const bob=-Math.abs(Math.sin(phase*Math.PI))*2.4;
+  const size=CLAUDE_DANCE.height;
+  claudeFrames.forEach((sprite,index)=>{
+    const isCurrent=index===current, isPrevious=index===previous;
+    sprite.visible=isCurrent||isPrevious;
+    if(!sprite.visible) return;
+    sprite.alpha=isCurrent?fade*.45+.55:1-fade;
+    const frameScale=size/claudeFrames[index].texture.height;
+    sprite.width=claudeFrames[index].texture.width*frameScale;sprite.height=size;
+    // anchor is at the feet (y=1), so position.y is the foot line; ground[] only trims the box bottom.
+    sprite.position.set(p.x,p.y+bob+(CLAUDE_DANCE.ground[index]-1)*size);
+  });
+  claudeShadow.clear();
+  claudeShadow.beginFill(0x86603f,.055).drawEllipse(p.x,p.y+2,26,8).endFill();
+  claudeShadow.beginFill(0x735336,.12).drawEllipse(p.x,p.y,14,3.5).endFill();
+}
+// Where one cast member stands on the current scene: its own scene.cast entry, else the default.
+function castSpot(id) {
+  const scene=SCENES.find(item=>item.id===selectedScene);
+  const own=scene&&scene.cast&&scene.cast[id];
+  const base=CAST_DEFAULT[id]||{x:462,y:430};
+  return {x:(own&&own.x!=null?own.x:base.x),y:(own&&own.y!=null?own.y:base.y)};
+}
+function updateStanders() {
+  for(const girl of STANDERS) {
+    const spot=castSpot(girl.id),x=spot.x,y=spot.y;
+    const t=game.time+girl.phase,size=girl.height;
+    const scale=size/girl.sprite.texture.height;
+    // Width/height follow scale, so breathing goes through scale.y and keeps the feet planted.
+    girl.sprite.scale.set(scale,scale*(1+Math.sin(t*1.1)*.006));
+    girl.sprite.skew.x=Math.sin(t*.6)*.012;
+    girl.sprite.position.set(x,y-Math.abs(Math.sin(t*1.1))*1.5);
+    girl.shadow.clear();
+    girl.shadow.beginFill(0x86603f,.055).drawEllipse(x,y+2,30,9).endFill();
+    girl.shadow.beginFill(0x735336,.12).drawEllipse(x,y,16,4).endFill();
+  }
+}
 updatePanels();loadModel();

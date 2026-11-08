@@ -3,31 +3,48 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>大肥鱼的扶砖小院</title>
-  <link rel="stylesheet" href="/style.css">
-  <link rel="stylesheet" href="/bricks.css">
+  <title>大肥鱼的直播间</title>
+  <link rel="stylesheet" href="/style.css?v=20261108-moveback2">
+  <link rel="stylesheet" href="/bricks.css?v=20261108-moveback2">
   <script src="/vendor/live2dcubismcore.min.js"></script>
   <script src="/vendor/pixi.min.js"></script>
   <script src="/vendor/cubism4.min.js"></script>
-  <script type="module" src="/bricks.mjs?v=20261107-audio"></script>
+  <script type="module" src="/bricks.mjs?v=20261108-moveback2"></script>
+  <script>
+    // /live is the same courtyard with the console removed, for 直播伴侣 / OBS window capture.
+    if (location.pathname.replace(/\/+$/, '') === '/live') document.documentElement.classList.add('live-mode');
+  </script>
+  <style>
+    /* Live capture mode: a 9:16 phone frame. The courtyard sits square in the top square of the
+       frame; the lower area is reserved for whatever goes beneath it. */
+    html.live-mode,html.live-mode body{background:#0f1424;overflow:hidden}
+    html.live-mode .topbar,html.live-mode .brick-controls,html.live-mode .preview-footer{display:none}
+    html.live-mode .brick-workspace{display:flex;align-items:center;justify-content:center;max-width:none;padding:0;margin:0;height:100vh}
+    html.live-mode .game-preview{position:static;max-width:none;padding:0;border-radius:0;box-shadow:none;
+      width:min(100vw,calc(100vh * 9 / 16));height:min(calc(100vw * 16 / 9),100vh);
+      max-height:none;display:flex;flex-direction:column;overflow:hidden;background:#f8e3c4}
+    html.live-mode .brick-stage{width:100%;height:auto;aspect-ratio:1;border-radius:0;flex:0 0 auto}
+    /* Reserved area under the courtyard; fill it later. */
+    html.live-mode .game-preview::after{content:"";flex:1 1 auto;background:linear-gradient(#f8e3c4,#efd7b3)}
+  </style>
 </head>
 <body class="garden-room">
   <header class="topbar">
-    <div class="identity"><span class="fish-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 17c0-7 5-11 12-11 6 0 11 5 11 11v7l-5-3c-2 3-6 5-10 4-5-1-8-4-8-8Z"/><circle cx="20" cy="14" r="1.4"/><path d="m5 20-4 2 1-6"/></svg></span><h1>大肥鱼的扶砖小院<span>今天，也要整整齐齐</span></h1></div>
-    <div class="top-actions"><a href="#garden-chat">和本鱼聊聊</a><button id="game-sound" class="secondary">开启声音</button><button id="game-pause" class="secondary">暂停</button></div>
+    <div class="identity"><span class="fish-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 17c0-7 5-11 12-11 6 0 11 5 11 11v7l-5-3c-2 3-6 5-10 4-5-1-8-4-8-8Z"/><circle cx="20" cy="14" r="1.4"/><path d="m5 20-4 2 1-6"/></svg></span><h1>大肥鱼的直播间<span>今天，也要整整齐齐</span></h1></div>
+    <div class="top-actions"><a href="#garden-chat">和本鱼聊聊</a><button id="game-sound" class="secondary">开启声音</button><button id="game-pause" class="secondary">暂停</button><button id="game-hide-bricks" class="secondary" aria-pressed="false">隐藏砖块</button></div>
   </header>
   <main class="brick-workspace">
     <section class="game-preview" aria-label="扶砖互动场景">
       <div class="brick-stage" id="brick-stage">
-        <div class="game-title"><h2>大肥鱼的<br><span id="scene-title">扶砖小院</span></h2><p>你们轻轻推，本鱼慢慢扶。</p></div>
-        <div class="game-local">本地试玩 · 未接入抖音</div>
+        <div class="game-title"><h2><span id="scene-title">大肥鱼的直播间</span></h2><p>今天，也要整整齐齐。</p></div>
+        <div class="game-local">AI 生成 · 大肥鱼</div>
         <canvas id="game-board" aria-label="六排彩色砖与自动扶砖的大肥鱼"></canvas>
         <div id="fish-bubble" class="fish-bubble" hidden></div>
         <div id="board-loading" class="board-loading">大肥鱼正在准备上工…</div>
         <div id="paused-overlay" class="paused-overlay" hidden>休息一下<br><span>点击“继续”就接着扶</span></div>
         <div class="game-caption"><span id="game-caption">本鱼先坐一会儿，有事叫我。</span></div>
       </div>
-      <div class="preview-footer"><span>1～6号，想推哪排就推哪排</span><span>免费参与 · 不用礼物</span></div>
+      <div class="stage-lower" aria-hidden="true"></div>
     </section>
     <aside class="brick-controls control-panel">
       <section class="garden-chat" id="garden-chat" aria-labelledby="chat-heading">
@@ -46,7 +63,7 @@
         <p id="scene-feedback" class="scene-feedback" role="status">当前：海边小院</p>
       </section>
       <section>
-        <div class="section-heading"><h2>来小院捣个蛋</h2><span class="tag">不用礼物</span></div>
+        <div class="section-heading"><h2>来小院捣个蛋</h2></div>
         <p class="description">1号最短，6号最长。选一排，看本鱼忙起来。</p>
         <div id="lane-commands" class="lane-commands" aria-label="选择推倒哪排砖"></div>
         <form id="brick-command-form"><label for="brick-command">也可以发一句“1号倒”</label><div class="command-input"><input id="brick-command" aria-label="模拟弹幕" placeholder="想推几号呀？" maxlength="30" autocomplete="off"><button type="submit" class="primary">推一下</button></div></form>
@@ -59,7 +76,7 @@
         <button id="game-reset" class="secondary reset-button">收拾小院，重新来</button>
       </section>
       <details class="game-notes"><summary>怎么玩 · 本鱼的声音</summary><p>每个号码对应一整排。砖会连续倒下，本鱼会按顺序逐块扶正。</p><p>同一排没扶完时不会重复推倒；可以推别排，让她忙起来。</p><label><input type="checkbox" id="game-voice" checked>开启声音后，让本鱼边干活边吐槽</label><p id="voice-feedback" class="voice-feedback">扶砖吐槽使用固定短台词，聊天区使用 AI 回复。</p></details>
-      <footer class="panel-footer">本地试玩，尚未接入抖音弹幕。<br>聊天、扶砖都在小院里，聊天回复优先播放。</footer>
+      <footer class="panel-footer">AI 生成内容，由真人值守。<br>聊天、扶砖都在小院里，聊天回复优先播放。</footer>
     </aside>
   </main>
 </body>

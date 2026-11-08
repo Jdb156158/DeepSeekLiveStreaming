@@ -2,10 +2,13 @@
 import {REPAIR_DURATION,repairPose} from './repair-motion.mjs';
 
 export const ROW_SPACING = 1.25;
-export const BRICK_SPACING = .82;
+export const BRICK_SPACING = .70;
+// Depth offset of the first brick in every row. The courtyard is drawn in one projection, so moving
+// the rows back (larger z) lifts them up the screen and keeps the number plaques inside the frame.
+export const ROW_Z_ORIGIN = 2.2;
 export const ROW_BRICK_COUNTS = [4,5,6,7,8,9];
-export const BRICK_HEIGHT = 1.04;
-export const BRICK_WIDTH = .46;
+export const BRICK_HEIGHT = .88;
+export const BRICK_WIDTH = .39;
 export const BRICK_THICKNESS = .16;
 export const REST_X = -1.1;
 export const REST_Z = 0;
@@ -39,10 +42,24 @@ export class DominoGame {
   }
 
   command(text) {
-    const match = /^([1-6一二三四五六])\s*号?\s*(倒|倒下|推倒)[！!。\s]*$/.exec(text.trim());
-    if (!match) return {ok:false, message:'试试输入“1号倒”到“6号倒”。'};
-    const id = Number(match[1]) || '一二三四五六'.indexOf(match[1]) + 1;
-    return this.knock(id);
+    const source = text.trim();
+    if (!source) return {ok:false, message:'试试输入“1”到“6”，或“推1”“1号倒”。'};
+    // Whole-message forms first: "3", "三号", "1号倒", "6号推倒".
+    const whole = /^([1-6一二三四五六])\s*(?:号)?\s*(?:倒|倒下|推倒|推|来)?[！!。～~啦]*$/.exec(source);
+    if (whole) return this.knock(Number(whole[1]) || '一二三四五六'.indexOf(whole[1]) + 1);
+    // Then anything containing a push word next to a row number, e.g. "推1", "推倒1号", "老板扣个3号",
+    // "1号给我倒". The push word is required so "我今天好累1" stays a plain chat message.
+    const row = '(?<![0-9.．])([1-6一二三四五六])(?![0-9.．])';
+    const push = '(?:推倒|推|倒|扣|来|干)';
+    const near = [
+      new RegExp(push + '\\s*(?:' + row + ')\\s*(?:号)?'),
+      new RegExp(row + '\\s*(?:号)\\s*(?:' + push + '|给我|快|赶紧)?')
+    ];
+    for (const pattern of near) {
+      const match = pattern.exec(source);
+      if (match) return this.knock(Number(match[1]) || '一二三四五六'.indexOf(match[1]) + 1);
+    }
+    return {ok:false, message:'试试输入“1”到“6”，或“推1”“1号倒”。'};
   }
 
   knock(id) {
@@ -92,7 +109,7 @@ export class DominoGame {
     if (actor.phase === 'moving' || actor.phase === 'returning') {
       const returning=actor.phase==='returning';
       const targetX = returning?REST_X:(actor.row - 1) * ROW_SPACING - .5;
-      const targetZ = returning?REST_Z:actor.brick * BRICK_SPACING;
+      const targetZ = returning?REST_Z:ROW_Z_ORIGIN + actor.brick * BRICK_SPACING;
       const dx = targetX - actor.x, dz = targetZ - actor.z;
       const distance = Math.hypot(dx, dz), step = 2.7 * seconds;
       if (distance <= step) {
