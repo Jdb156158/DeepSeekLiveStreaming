@@ -429,7 +429,7 @@ function showBanter(item) {
   $('fish-bubble').hidden=false;
   $('game-caption').textContent=item.text;
   bubbleUntil=game.time+6;
-  if(!item.audio) return 0;
+  if(!item.audio||!soundOn) return 0;
   return new Promise(resolve=>{
     const audio=new Audio(item.audio);
     const finish=()=>{ if(audio.dataset.done) return;audio.dataset.done='1';bgmSetTalking(false);resolve(0); };
@@ -440,9 +440,14 @@ function showBanter(item) {
     setTimeout(finish,20000);
   });
 }
+// Warm the pool as soon as the page opens so the first quiet moment has a line ready.
+setTimeout(()=>{void fetchBanter();},2500);
+setTimeout(()=>{void fetchBanter();},6000);
 function tickBanter() {
   const now=performance.now();
   if(BANTER.idleSince===0) BANTER.idleSince=now;
+  // Only the voice checkbox opts out. Without sound the line still shows as text, otherwise a
+  // freshly opened page would stay silent until someone remembers to press "开启声音".
   if(banterBusy()||!$('game-voice').checked) { BANTER.idleSince=now;return; }
   const idleFor=(now-Math.max(BANTER.idleSince,lastInteractionAt))/1000;
   if(idleFor<BANTER.gap) return;
