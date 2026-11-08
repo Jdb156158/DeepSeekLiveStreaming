@@ -480,8 +480,12 @@ function setChatPending(value) {
   $('garden-chat').dataset.state=chatPlaying?'speaking':value?'thinking':'idle';
   document.querySelectorAll('[data-chat-prompt]').forEach(button=>button.disabled=value);
 }
+// While a reply is spoken, nothing else may take over the bubble: arrival greetings and brick
+// announcements queue behind it, otherwise the answer vanishes mid-sentence.
+let captionHold=false;
 function chatCaption(text) {
   // The live capture has no chat panel, so the reply goes in the bubble over the fish as well.
+  captionHold=true;
   $('fish-bubble').textContent=text;
   $('fish-bubble').hidden=false;
   bubbleUntil=game.time+8;
@@ -491,7 +495,8 @@ function chatCaption(text) {
 function finishChat(ticket,message,error=false) {
   if(ticket!==chatRequest)return;
   chatPlaying=false;voiceBusy=false;analyser=null;mouth=0;bgmSetTalking(false);
-  setChatPending(false);chatCaptionUntil=performance.now()+5000;
+  setChatPending(false);chatCaptionUntil=performance.now()+10000;
+  captionHold=false;
   chatFeedback(message,error);
 }
 async function sendChat() {
@@ -519,7 +524,7 @@ async function sendChat() {
       const end=Math.max(1,Math.ceil(data.text.length*audio.currentTime/audio.duration));
       chatCaption(data.text.slice(Math.max(0,end-70),end));
     };
-    audio.onended=()=>{if(ticket===chatRequest){bgmSetTalking(false);chatCaption(data.text.slice(-70));finishChat(ticket,'本鱼说完啦，还想聊什么？');}};
+    audio.onended=()=>{if(ticket===chatRequest){bgmSetTalking(false);chatCaption(data.text);finishChat(ticket,'本鱼说完啦，还想聊什么？');}};
     audio.onerror=()=>{if(ticket===chatRequest){bgmSetTalking(false);finishChat(ticket,'回复已显示，语音播放失败，请再试一次。',true);}};
     try {
       await audio.play();
@@ -673,7 +678,7 @@ function handleViewerEnter(viewers) {
   const line=WELCOME_LINE;
   // Written only: no spoken greeting. A voice line fired at every arrival reads as prompting
   // viewers to interact, which Douyin penalises.
-  if(!chatPending && performance.now()>=chatCaptionUntil) {
+  if(!chatPending && !captionHold && performance.now()>=chatCaptionUntil) {
     $('game-caption').parentElement.dataset.chat='false';
     $('game-caption').textContent=line;
     $('fish-bubble').textContent=line;$('fish-bubble').hidden=false;
@@ -690,7 +695,7 @@ function handleDanmaku(item) {
     feedback(`${who}：${text} · ${result.message}`,false);
     // Show the viewer and the row on the courtyard caption so /live viewers see who pushed.
     const row=game.queue[game.queue.length-1];
-    if(row && !chatPending && performance.now()>=chatCaptionUntil) {
+    if(row && !chatPending && !captionHold && performance.now()>=chatCaptionUntil) {
       $('game-caption').parentElement.dataset.chat='false';
       $('game-caption').textContent=`${who} 推倒了 ${row} 号砖！`;
       bubbleUntil=game.time+2.2;
