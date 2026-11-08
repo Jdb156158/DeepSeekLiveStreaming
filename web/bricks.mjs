@@ -254,7 +254,8 @@ function bgmPick() {
   return BGM.queue.shift()||BGM.tracks?.[0]||{src:BGM.fallback};
 }
 async function bgmLoadList() {
-  const own={src:BGM.fallback,label:'我的歌',start:BGM.start,end:BGM.end};
+  // The operator's own song leads the list so it is always easy to find.
+  const own={src:BGM.fallback,label:'我的歌 · bgm.mp3',start:BGM.start,end:BGM.end};
   try {
     const response=await fetch(BGM.list,{cache:'no-store'});
     if(!response.ok) throw new Error('no index');
@@ -281,6 +282,7 @@ function bgmRenderList() {
   for(const track of BGM.tracks||[]) {
     const button=document.createElement('button');
     button.type='button';button.className='music-item';button.dataset.src=track.src||'';
+    if(track.src===BGM.fallback) button.dataset.own='true';
     button.setAttribute('role','option');button.setAttribute('aria-selected','false');
     button.title=track.label||'';
     const name=document.createElement('span');name.className='music-name';name.textContent=track.label||track.src;
