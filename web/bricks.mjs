@@ -738,28 +738,29 @@ async function startCamera() {
   const video=$('live-cam-video');
   video.srcObject=camStream;
   $('live-cam').hidden=false;
+  syncCamAnchor();
   await video.play().catch(()=>{});
 }
-// The courtyard stage is often taller than the console window, so anchor the camera to the part of
-// the stage that is actually on screen: 5px from its left edge and 5px above the visible bottom.
+// The square courtyard stage is taller than the console window, so the page scrolls. The camera is
+// pinned to the stage's bottom-left corner; if that corner falls below the window, lift it back up to
+// the visible bottom so it is never clipped away.
 function syncCamAnchor() {
   const stage=$('brick-stage');
   const cam=$('live-cam');
   if(!stage||!cam) return;
   const box=stage.getBoundingClientRect();
-  const wasHidden=cam.hidden;
-  if(wasHidden){cam.hidden=false;cam.style.visibility='hidden';}
-  const camH=cam.offsetHeight||96;
-  if(wasHidden){cam.hidden=true;cam.style.visibility='';}
-  // Anchor to the bottom of the window, not the stage: the square stage is usually taller than the
-  // viewport, so a stage-relative anchor would push the camera off screen.
-  const visibleBottom=Math.min(box.bottom,window.innerHeight)-5;
-  const top=Math.max(0,visibleBottom-box.top-camH);
-  stage.style.setProperty('--cam-top',`${Math.round(top)}px`);
+  // The layout is still settling right after load; skip the early pass rather than anchor to junk.
+  if(box.width<40||box.height<40) return;
+  const camH=cam.offsetHeight||Math.round(box.width*.13)||96;
+  // Distance from the stage's bottom edge upwards; the CSS inset is 5px.
+  const overflow=Math.max(0,box.bottom-window.innerHeight);
+  const lift=Math.round(Math.min(overflow+5,Math.max(5,box.height-camH-5)));
+  stage.style.setProperty('--cam-lift',`${lift}px`);
 }
 window.addEventListener('resize',syncCamAnchor);
-window.requestAnimationFrame(syncCamAnchor);
-setTimeout(syncCamAnchor,600);
+window.addEventListener('scroll',syncCamAnchor,{passive:true});
+// Run a few times while fonts, images and the stage aspect-ratio settle.
+for(const delay of [0,120,400,1000,2000]) setTimeout(syncCamAnchor,delay);
 function stopCamera() {
   camStream?.getTracks().forEach(track=>track.stop());
   camStream=null;

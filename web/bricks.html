@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>大肥鱼的直播间</title>
   <link rel="stylesheet" href="/style.css?v=20261108-camwin">
-  <link rel="stylesheet" href="/bricks.css?v=20261108-owntrack">
+  <link rel="stylesheet" href="/bricks.css?v=20261108-camfix">
   <script src="/vendor/live2dcubismcore.min.js"></script>
   <script src="/vendor/pixi.min.js"></script>
   <script src="/vendor/cubism4.min.js"></script>
-  <script type="module" src="/bricks.mjs?v=20261108-owntrack"></script>
+  <script type="module" src="/bricks.mjs?v=20261108-camfix"></script>
   <script>
     // /live is the same courtyard with the console removed, for 直播伴侣 / OBS window capture.
     if (location.pathname.replace(/\/+$/, '') === '/live') document.documentElement.classList.add('live-mode');
@@ -31,7 +31,9 @@
     /* Host camera: rounded square in the bottom-left corner, above the courtyard. */
     /* Anchor from the stage's top edge, at a distance measured from the bottom of the window, so the
        camera stays visible even when the square stage is taller than the console window. */
-        .live-cam{position:absolute;z-index:9;left:5px;top:var(--cam-top,calc(100% - 101px));width:11%;max-width:96px;aspect-ratio:1/1;
+        /* Pinned to the bottom-left of the visible stage: anchored from the stage's bottom edge, so it
+           can never slide out of the letterboxed area or out of the window. */
+        .live-cam{position:absolute;z-index:9;left:6px;bottom:var(--cam-lift,5px);width:13%;max-width:120px;min-width:76px;aspect-ratio:1/1;
       border-radius:12px;overflow:hidden;
       -webkit-mask-image:-webkit-radial-gradient(#fff,#000);   /* forces rounding inside transformed parents */
       clip-path:inset(0 round 12px);
