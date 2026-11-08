@@ -389,10 +389,10 @@ bgmLoadList().then(()=>{
 });
 // ---- Dead-air filler: when nobody interacts, the fish says something short -------------------
 // A line is fetched ahead of time and played locally, so a slow model never leaves the room silent.
-// ?banterGap=<seconds> shortens the wait for testing (default 60s of real silence).
+// ?banterGap=<seconds> overrides the wait (default 10s of real silence: the room never goes quiet).
 const bgmQuery=new URLSearchParams(location.search);
 const banterGapParam=parseFloat(bgmQuery.get('banterGap'));
-const BANTER={gap:Number.isFinite(banterGapParam)&&banterGapParam>=3?banterGapParam:60,
+const BANTER={gap:Number.isFinite(banterGapParam)&&banterGapParam>=3?banterGapParam:10,
   pool:[],fetching:false,lastKind:null,spoken:0,idleSince:0};
 const BANTER_KINDS=['joke','story','science','life','quiz'];
 const BANTER_OFFLINE=[
@@ -409,7 +409,7 @@ function banterBusy() {
 let lastInteractionAt=0;
 function noteInteraction() {lastInteractionAt=performance.now();}
 async function fetchBanter() {
-  if(BANTER.fetching||BANTER.pool.length>=2) return;
+  if(BANTER.fetching||BANTER.pool.length>=3) return;
   BANTER.fetching=true;
   try {
     const response=await fetch('/api/game/banter',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -420,9 +420,26 @@ async function fetchBanter() {
   } catch {
     // Offline or busy model: keep the room warm with the built-in lines.
     BANTER.pool.push({text:BANTER_OFFLINE[(Math.random()*BANTER_OFFLINE.length)|0],audio:null});
-  } finally { BANTER.fetching=false; }
+  } finally {
+    BANTER.fetching=false;
+    // Keep topping the pool up while it is short: at a 10s cadence one request is not enough.
+    if(BANTER.pool.length<3) setTimeout(()=>{void fetchBanter();},400);
+  }
+}
+// Skip a line that repeats the previous one, or one whose opening half is nearly identical.
+function banterTooSimilar(text) {
+  if(!text) return false;
+  const recent=BANTER.recent||[];
+  return recent.some(old=>{
+    if(old===text) return true;
+    const cut=Math.min(12,Math.floor(text.length/3));
+    return cut>4 && old.slice(0,cut)===text.slice(0,cut);
+  });
 }
 function showBanter(item) {
+  if(banterTooSimilar(item.text)) return 0; // the caller replenishes the pool
+  BANTER.recent=[...(BANTER.recent||[]),item.text].slice(-6);
+  BANTER.lastText=item.text;
   captionHold=false;
   $('game-caption').parentElement.dataset.chat='false';
   $('fish-bubble').textContent=item.text;
@@ -455,7 +472,8 @@ function tickBanter() {
   const item=BANTER.pool.shift();
   if(!item) { void fetchBanter();return; }
   BANTER.spoken++;
-  void showBanter(item).then(()=>{void fetchBanter();});
+  void showBanter(item);
+  void fetchBanter();
 }
 
 // Talk state: dip the music while a speech clip is audible, restore it afterwards.
