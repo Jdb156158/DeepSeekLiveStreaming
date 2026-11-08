@@ -8,3 +8,7 @@ web/assets/
 .env
 .env.*
 !.env.example
+
+# 背景音乐音频（体积大且受版权约束），本机生成，不入库
+web/media/bgm_kw/*.mp3
+web/media/bgm/*.mp3

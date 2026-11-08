@@ -199,9 +199,22 @@ def danmaku_norm(text):
     return " ".join(str(text or "").split())
 
 
+# Viewer arrivals are announced without any identity: the page only gets a bare "someone joined".
+DANMAKU_ENTER_COOLDOWN = 4
+DANMAKU_LAST_ENTER = [0.0]
+
+
 def danmaku_feed(message):
     """Turn one Dycast message into a game/chat event. Returns the accepted payload or None."""
     method = str(message.get("method") or "")
+    if method == "WebcastMemberMessage":
+        # A busy room can send these in bursts; keep the greeting from firing non-stop.
+        now = asyncio.get_running_loop().time()
+        if now - DANMAKU_LAST_ENTER[0] < DANMAKU_ENTER_COOLDOWN:
+            return None
+        DANMAKU_LAST_ENTER[0] = now
+        # Deliberately no user name: the stream never shows or speaks who joined.
+        return {"type": "enter", "method": method}
     if method not in ("WebcastChatMessage", "WebcastEmojiChatMessage"):
         return None
     user = message.get("user") or {}

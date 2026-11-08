@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>大肥鱼的直播间</title>
-  <link rel="stylesheet" href="/style.css?v=20261108-moveback2">
-  <link rel="stylesheet" href="/bricks.css?v=20261108-moveback2">
+  <link rel="stylesheet" href="/style.css?v=20261108-camwin">
+  <link rel="stylesheet" href="/bricks.css?v=20261108-camwin">
   <script src="/vendor/live2dcubismcore.min.js"></script>
   <script src="/vendor/pixi.min.js"></script>
   <script src="/vendor/cubism4.min.js"></script>
-  <script type="module" src="/bricks.mjs?v=20261108-moveback2"></script>
+  <script type="module" src="/bricks.mjs?v=20261108-camwin"></script>
   <script>
     // /live is the same courtyard with the console removed, for 直播伴侣 / OBS window capture.
     if (location.pathname.replace(/\/+$/, '') === '/live') document.documentElement.classList.add('live-mode');
@@ -18,31 +18,96 @@
     /* Live capture mode: a 9:16 phone frame. The courtyard sits square in the top square of the
        frame; the lower area is reserved for whatever goes beneath it. */
     html.live-mode,html.live-mode body{background:#0f1424;overflow:hidden}
-    html.live-mode .topbar,html.live-mode .brick-controls,html.live-mode .preview-footer{display:none}
+    html.live-mode .topbar,html.live-mode .brick-controls,html.live-mode .preview-footer,html.live-mode .live-cam{display:none}
     html.live-mode .brick-workspace{display:flex;align-items:center;justify-content:center;max-width:none;padding:0;margin:0;height:100vh}
     html.live-mode .game-preview{position:static;max-width:none;padding:0;border-radius:0;box-shadow:none;
       width:min(100vw,calc(100vh * 9 / 16));height:min(calc(100vw * 16 / 9),100vh);
       max-height:none;display:flex;flex-direction:column;overflow:hidden;background:#f8e3c4}
     html.live-mode .brick-stage{width:100%;height:auto;aspect-ratio:1;border-radius:0;flex:0 0 auto}
+  </style>
+  <style>
+    /* Live stats board: frosted glass, top-left of the courtyard. */
+    /* Guide board: same frosted glass as the stats board, mirrored to the top-right. */
+    /* Host camera: rounded square in the bottom-left corner, above the courtyard. */
+    /* Anchor from the stage's top edge, at a distance measured from the bottom of the window, so the
+       camera stays visible even when the square stage is taller than the console window. */
+        .live-cam{position:absolute;z-index:9;left:5px;top:var(--cam-top,calc(100% - 101px));width:11%;max-width:96px;aspect-ratio:1/1;
+      border-radius:12px;overflow:hidden;
+      -webkit-mask-image:-webkit-radial-gradient(#fff,#000);   /* forces rounding inside transformed parents */
+      clip-path:inset(0 round 12px);
+      background:rgba(255,255,255,.75);padding:2px;
+      box-shadow:0 6px 20px rgba(20,30,60,.3)}
+    .live-cam[hidden]{display:none}
+    .live-cam video{width:100%;height:100%;object-fit:cover;display:block;border-radius:10px;background:#000;transform:scaleX(-1)}
+    @media(max-width:760px){.live-cam{width:26%;border-radius:12px;left:2.5%;bottom:2.5%}}
+    .live-guide{position:absolute;z-index:6;right:3%;top:3.5%;max-width:230px;padding:10px 13px 11px;
+      border-radius:14px;color:#fff;
+      background:rgba(24,32,58,.52);
+      -webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);
+      border:1px solid rgba(255,255,255,.28);
+      box-shadow:0 6px 22px rgba(20,30,60,.22);pointer-events:none}
+    .live-guide-title{margin:0 0 7px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.2);
+      font-size:12px;font-weight:700;color:#fff;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+    .live-guide dl{margin:0;display:grid;gap:5px}
+    .live-guide dl div{display:flex;gap:6px;align-items:flex-start}
+    .live-guide dt{flex:0 0 auto;padding:0 5px;border-radius:5px;background:rgba(255,255,255,.2);
+      color:#fff;font-size:9px;font-weight:600;line-height:1.6}
+    .live-guide dd{margin:0;color:#fff;font-size:10.5px;line-height:1.55;text-shadow:0 1px 2px rgba(0,0,0,.22)}
+    @media(max-width:760px){.live-guide{max-width:150px;padding:8px 10px;top:13%}
+      .live-guide dd{font-size:9px}.live-guide dt{font-size:8px}}
+    .live-stats{position:absolute;z-index:6;left:3%;top:3.5%;min-width:150px;padding:10px 13px 11px;
+      border-radius:14px;color:#fff;
+      background:rgba(24,32,58,.52);
+      backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);
+      border:1px solid rgba(255,255,255,.28);
+      box-shadow:0 6px 22px rgba(20,30,60,.22);pointer-events:none}
+    .live-stats-row{display:flex;align-items:baseline;gap:7px;margin-bottom:7px;padding-bottom:6px;
+      border-bottom:1px solid rgba(255,255,255,.2)}
+    .live-stats-clock{color:#fff;font-size:19px;font-weight:600;letter-spacing:.04em;line-height:1;font-variant-numeric:tabular-nums}
+    .live-stats-date{font-size:10px;color:#fff;opacity:.9;letter-spacing:.02em}
+    .live-stats-grid{margin:0;display:grid;gap:6px}
+    .live-stats-grid>div{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+    .live-stats .live-stats-grid dt{color:#fff;font-size:11px;opacity:1;font-weight:500;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.28)}
+    .live-stats .live-stats-grid dd{color:#fff;margin:0;font-size:15px;font-weight:700;line-height:1.25;font-variant-numeric:tabular-nums;text-shadow:0 1px 2px rgba(0,0,0,.22)}
+    .live-stats .live-stats-grid small{color:#fff;font-size:9px;font-weight:400;opacity:.9;margin-left:1px}
+    @media(max-width:760px){.live-stats{min-width:0;padding:8px 10px;border-radius:12px}.live-stats-clock{font-size:16px}
+      .live-stats-grid dd{font-size:12px}.live-stats-grid dt{font-size:9px}}
     /* Reserved area under the courtyard; fill it later. */
     html.live-mode .game-preview::after{content:"";flex:1 1 auto;background:linear-gradient(#f8e3c4,#efd7b3)}
   </style>
 </head>
 <body class="garden-room">
   <header class="topbar">
-    <div class="identity"><span class="fish-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 17c0-7 5-11 12-11 6 0 11 5 11 11v7l-5-3c-2 3-6 5-10 4-5-1-8-4-8-8Z"/><circle cx="20" cy="14" r="1.4"/><path d="m5 20-4 2 1-6"/></svg></span><h1>大肥鱼的直播间<span>今天，也要整整齐齐</span></h1></div>
-    <div class="top-actions"><a href="#garden-chat">和本鱼聊聊</a><button id="game-sound" class="secondary">开启声音</button><button id="game-pause" class="secondary">暂停</button><button id="game-hide-bricks" class="secondary" aria-pressed="false">隐藏砖块</button></div>
+    <div class="identity"><span class="fish-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 17c0-7 5-11 12-11 6 0 11 5 11 11v7l-5-3c-2 3-6 5-10 4-5-1-8-4-8-8Z"/><circle cx="20" cy="14" r="1.4"/><path d="m5 20-4 2 1-6"/></svg></span><h1>大肥鱼的直播间<span>今天，也要开开心心</span></h1></div>
+    <div class="top-actions"><a href="#garden-chat">和本鱼聊聊</a><button id="game-sound" class="secondary">开启声音</button><button id="game-pause" class="secondary">暂停</button><button id="game-hide-bricks" class="secondary" aria-pressed="false">隐藏砖块</button><button id="game-auto-scene" class="secondary" aria-pressed="false">自动换景</button><button id="game-camera" class="secondary" aria-pressed="false">开启摄像头</button></div>
   </header>
   <main class="brick-workspace">
     <section class="game-preview" aria-label="扶砖互动场景">
       <div class="brick-stage" id="brick-stage">
-        <div class="game-title"><h2><span id="scene-title">大肥鱼的直播间</span></h2><p>今天，也要整整齐齐。</p></div>
-        <div class="game-local">AI 生成 · 大肥鱼</div>
+        <div class="game-title"><h2><span id="scene-title">大肥鱼的直播间</span></h2><p>今天，也要开开心心。</p></div>
         <canvas id="game-board" aria-label="六排彩色砖与自动扶砖的大肥鱼"></canvas>
         <div id="fish-bubble" class="fish-bubble" hidden></div>
         <div id="board-loading" class="board-loading">大肥鱼正在准备上工…</div>
         <div id="paused-overlay" class="paused-overlay" hidden>休息一下<br><span>点击“继续”就接着扶</span></div>
         <div class="game-caption"><span id="game-caption">本鱼先坐一会儿，有事叫我。</span></div>
+        <div class="live-cam" id="live-cam" hidden><video id="live-cam-video" autoplay muted playsinline></video></div>
+        <div class="live-stats" id="live-stats" aria-label="直播数据">
+          <div class="live-stats-row"><span class="live-stats-clock" id="stat-clock">--:--</span><span class="live-stats-date" id="stat-date"></span></div>
+          <dl class="live-stats-grid">
+            <div><dt>扶砖次数</dt><dd><span id="stat-repaired">0</span><small> 块</small></dd></div>
+            <div><dt>今日体力</dt><dd><span id="stat-stamina">100</span><small> %</small></dd></div>
+            <div><dt>累积观看</dt><dd><span id="stat-viewers">0</span><small> 人</small></dd></div>
+          </dl>
+        </div>
+        <div class="live-guide" aria-label="直播玩法">
+          <p class="live-guide-title">AI + 真人互动直播</p>
+          <dl>
+            <div><dt>玩法</dt><dd>砖倒了，大肥鱼起身一块块扶好</dd></div>
+            <div><dt>聊天</dt><dd>发文字问本鱼，她会用声音回答</dd></div>
+            <div><dt>短句</dt><dd>一句话就好，像「你好呀」「累不累」</dd></div>
+            <div><dt>推砖</dt><dd>发「1」～「6」推倒对应那排</dd></div>
+          </dl>
+        </div>
       </div>
       <div class="stage-lower" aria-hidden="true"></div>
     </section>
