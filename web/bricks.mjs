@@ -960,12 +960,10 @@ function rollStatsDay(){
   // Called from the timer: a stream that crosses midnight must roll over without a reload.
   if(stats.day!==todayKey()) { stats={day:todayKey(),viewers:0,repaired:0};saveStats(); }
 }
-// Viewer count comes from the backend, which deduplicates by Douyin user id; this page only
-// remembers the largest number it has seen so the board never counts down.
-// The backend is authoritative: the number may drop (backend restart, new room), and the board
-// must follow instead of being stuck at the highest value it ever saw.
+// Viewer count is "distinct people seen today". The backend owns it: it deduplicates by Douyin user
+// id and rolls the set over at midnight. This page only mirrors the number, so the two can never
+// disagree about when the day started.
 function noteViewers(total){
-  rollStatsDay();
   const value=Math.max(0,Number(total)||0);
   if(value!==stats.viewers) { stats.viewers=value;saveStats(); }
 }

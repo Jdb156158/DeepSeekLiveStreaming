@@ -1,5 +1,6 @@
 """Loopback-only Mac preview: Live2D, local LLM, optional DeepSeek, and TTS."""
 import asyncio
+import datetime
 import json
 import os
 from pathlib import Path
@@ -258,18 +259,23 @@ DANMAKU_ENTER_COOLDOWN = 4
 DANMAKU_LAST_ENTER = [0.0]
 
 
-# Distinct viewers seen for this room, by Douyin user id (falling back to the display name).
+# Distinct viewers seen *today* in this room, by Douyin user id (falling back to the display name).
 # Every live-room message carries the sender, so this counts people rather than packets. The set is
-# kept on disk so restarting the backend does not reset the board to zero mid-stream.
+# scoped to room + local date and kept on disk: restarting the backend keeps today's number, while a
+# new day starts from zero, matching the other "today" figures on the stats board.
 DANMAKU_VIEWERS = {}
 DANMAKU_VIEWERS_FILE = LOCAL / "viewers.json"
 
 
+def _viewers_day():
+    return datetime.datetime.now().strftime("%Y-%m-%d")
+
+
 def _viewers_load(room_id):
-    """Read back the viewer set for this room; a different room starts clean."""
+    """Read back today's viewer set for this room; another room or another day starts clean."""
     try:
         saved = json.loads(DANMAKU_VIEWERS_FILE.read_text(encoding="utf-8"))
-        if str(saved.get("room")) == str(room_id):
+        if str(saved.get("room")) == str(room_id) and saved.get("day") == _viewers_day():
             return {str(k): str(v) for k, v in (saved.get("people") or {}).items()}
     except Exception:
         pass
@@ -279,14 +285,24 @@ def _viewers_load(room_id):
 def _viewers_save():
     try:
         room = (DANMAKU.get("room") or {}).get("id") or ""
-        DANMAKU_VIEWERS_FILE.write_text(json.dumps({"room": room, "people": DANMAKU_VIEWERS},
-            ensure_ascii=False), encoding="utf-8")
+        DANMAKU_VIEWERS_FILE.write_text(json.dumps({"room": room, "day": _viewers_day(),
+            "people": DANMAKU_VIEWERS}, ensure_ascii=False), encoding="utf-8")
     except Exception:
         pass
 
 
+def _viewers_roll():
+    """Drop yesterday's names as soon as the date changes, without waiting for a restart."""
+    if DANMAKU.get("viewers_day") != _viewers_day():
+        DANMAKU["viewers_day"] = _viewers_day()
+        DANMAKU_VIEWERS.clear()
+        DANMAKU["viewers"] = 0
+        _viewers_save()
+
+
 def danmaku_viewer(user):
-    """Remember one viewer and return the current distinct count."""
+    """Remember one viewer and return today's distinct count."""
+    _viewers_roll()
     uid = str(user.get("id") or user.get("sec_uid") or user.get("name") or "").strip()
     if not uid:
         return len(DANMAKU_VIEWERS)
@@ -366,6 +382,7 @@ async def danmaku(request):
                     if str(item.get("roomId")) != str(previous):
                         DANMAKU_VIEWERS.clear()
                         DANMAKU_VIEWERS.update(_viewers_load(item.get("roomId")))
+                    DANMAKU["viewers_day"] = _viewers_day()
                     DANMAKU["viewers"] = len(DANMAKU_VIEWERS)
                     continue
                 DANMAKU["received"] += 1
