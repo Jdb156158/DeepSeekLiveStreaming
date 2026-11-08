@@ -387,6 +387,72 @@ bgmLoadList().then(()=>{
   if(!$('music-feedback')) return;
   $('music-feedback').textContent=BGM.element?'点一首直接切换。':'点“开启声音”后开始播放，也可以直接点一首。';
 });
+// ---- Dead-air filler: when nobody interacts, the fish says something short -------------------
+// A line is fetched ahead of time and played locally, so a slow model never leaves the room silent.
+// ?banterGap=<seconds> shortens the wait for testing (default 60s of real silence).
+const bgmQuery=new URLSearchParams(location.search);
+const banterGapParam=parseFloat(bgmQuery.get('banterGap'));
+const BANTER={gap:Number.isFinite(banterGapParam)&&banterGapParam>=3?banterGapParam:60,
+  pool:[],fetching:false,lastKind:null,spoken:0,idleSince:0};
+const BANTER_KINDS=['joke','story','science','life','quiz'];
+const BANTER_OFFLINE=[
+  '没人说话的时候，本鱼就盯着这几排砖发呆。',
+  '今天这个院子里，风都是甜的。',
+  '本鱼扶砖扶到一半，突然想吃烤串了。',
+  '安静一会儿也挺好，本鱼陪你们坐会儿。',
+  '刚刚差点睡着，梦里也在扶砖。'
+];
+function banterBusy() {
+  return chatPending||chatPlaying||voiceBusy||game.paused;
+}
+// Idle means nothing new happened: no message, no push, no arrival.
+let lastInteractionAt=0;
+function noteInteraction() {lastInteractionAt=performance.now();}
+async function fetchBanter() {
+  if(BANTER.fetching||BANTER.pool.length>=2) return;
+  BANTER.fetching=true;
+  try {
+    const response=await fetch('/api/game/banter',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({kind:BANTER_KINDS[(Math.random()*BANTER_KINDS.length)|0]})});
+    if(!response.ok) throw new Error();
+    const data=await response.json();
+    if(data.text && data.audio) BANTER.pool.push({text:data.text,audio:data.audio});
+  } catch {
+    // Offline or busy model: keep the room warm with the built-in lines.
+    BANTER.pool.push({text:BANTER_OFFLINE[(Math.random()*BANTER_OFFLINE.length)|0],audio:null});
+  } finally { BANTER.fetching=false; }
+}
+function showBanter(item) {
+  captionHold=false;
+  $('game-caption').parentElement.dataset.chat='false';
+  $('fish-bubble').textContent=item.text;
+  $('fish-bubble').hidden=false;
+  $('game-caption').textContent=item.text;
+  bubbleUntil=game.time+6;
+  if(!item.audio) return 0;
+  return new Promise(resolve=>{
+    const audio=new Audio(item.audio);
+    const finish=()=>{ if(audio.dataset.done) return;audio.dataset.done='1';bgmSetTalking(false);resolve(0); };
+    audio.onended=finish;audio.onerror=finish;
+    if(!soundOn) { bgmSetTalking(false);resolve(0);return; }
+    audio.play().then(()=>{bgmSetTalking(true);}).catch(finish);
+    // Never block the room if the clip stalls.
+    setTimeout(finish,20000);
+  });
+}
+function tickBanter() {
+  const now=performance.now();
+  if(BANTER.idleSince===0) BANTER.idleSince=now;
+  if(banterBusy()||!$('game-voice').checked) { BANTER.idleSince=now;return; }
+  const idleFor=(now-Math.max(BANTER.idleSince,lastInteractionAt))/1000;
+  if(idleFor<BANTER.gap) return;
+  BANTER.idleSince=now;
+  const item=BANTER.pool.shift();
+  if(!item) { void fetchBanter();return; }
+  BANTER.spoken++;
+  void showBanter(item).then(()=>{void fetchBanter();});
+}
+
 // Talk state: dip the music while a speech clip is audible, restore it afterwards.
 let bgmTalking=false;
 function bgmSetTalking(talking) {
@@ -485,6 +551,7 @@ function setChatPending(value) {
 let captionHold=false;
 function chatCaption(text) {
   // The live capture has no chat panel, so the reply goes in the bubble over the fish as well.
+  noteInteraction();
   captionHold=true;
   $('fish-bubble').textContent=text;
   $('fish-bubble').hidden=false;
@@ -670,6 +737,7 @@ function updateConfetti() {
 let welcomeBusyUntil=0;
 function handleViewerEnter(viewers) {
   noteViewers(viewers);
+  noteInteraction();
   // Two bursts from the lower corners read as a welcome gate rather than a single pop.
   confettiBurst(150,760,60);
   confettiBurst(850,760,60);
@@ -686,6 +754,7 @@ function handleViewerEnter(viewers) {
   }
 }
 function handleDanmaku(item) {
+  noteInteraction();
   if(item.type==='enter') { handleViewerEnter(item.viewers); return 0; }
   const text=String(item.text||'').trim();
   if(!text) return 0;
@@ -988,6 +1057,7 @@ async function loadModel() {
 }
 app.ticker.add(()=>{
   game.tick(Math.min(app.ticker.deltaMS/1000,.05));
+  tickBanter();
   for(const event of game.takeEvents()) {
     if(event.type==='knock') {
       const line=game.actor.row?`${event.row}号也倒了？本鱼记住你啦！`:`谁推的${event.row}号？本鱼这就来！`;
