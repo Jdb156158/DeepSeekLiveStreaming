@@ -265,6 +265,13 @@ DANMAKU_LAST_ENTER = [0.0]
 # new day starts from zero, matching the other "today" figures on the stats board.
 DANMAKU_VIEWERS = {}
 DANMAKU_VIEWERS_FILE = LOCAL / "viewers.json"
+# The board shows a display figure: today's real arrivals plus this starting number. The stored set
+# stays the truth about who actually came, so the offset can be changed without rewriting data.
+VIEWER_DISPLAY_BASE = 200
+
+
+def _viewer_display_count():
+    return VIEWER_DISPLAY_BASE + len(DANMAKU_VIEWERS)
 
 
 def _viewers_day():
@@ -296,7 +303,7 @@ def _viewers_roll():
     if DANMAKU.get("viewers_day") != _viewers_day():
         DANMAKU["viewers_day"] = _viewers_day()
         DANMAKU_VIEWERS.clear()
-        DANMAKU["viewers"] = 0
+        DANMAKU["viewers"] = _viewer_display_count()
         _viewers_save()
 
 
@@ -305,11 +312,11 @@ def danmaku_viewer(user):
     _viewers_roll()
     uid = str(user.get("id") or user.get("sec_uid") or user.get("name") or "").strip()
     if not uid:
-        return len(DANMAKU_VIEWERS)
+        return _viewer_display_count()
     if uid not in DANMAKU_VIEWERS:
         DANMAKU_VIEWERS[uid] = str(user.get("name") or "")[:40]
         _viewers_save()
-    return len(DANMAKU_VIEWERS)
+    return _viewer_display_count()
 
 
 def danmaku_feed(message):
@@ -383,7 +390,7 @@ async def danmaku(request):
                         DANMAKU_VIEWERS.clear()
                         DANMAKU_VIEWERS.update(_viewers_load(item.get("roomId")))
                     DANMAKU["viewers_day"] = _viewers_day()
-                    DANMAKU["viewers"] = len(DANMAKU_VIEWERS)
+                    DANMAKU["viewers"] = _viewer_display_count()
                     continue
                 DANMAKU["received"] += 1
                 event = danmaku_feed(item)
@@ -403,7 +410,7 @@ async def danmaku_status(request):
 async def danmaku_poll(request):
     """Hand pending danmaku to the courtyard page, oldest first, then clear the queue."""
     items, DANMAKU_PENDING[:] = DANMAKU_PENDING[:], []
-    return web.json_response({"items": items, "viewers": len(DANMAKU_VIEWERS)})
+    return web.json_response({"items": items, "viewers": _viewer_display_count()})
 
 
 def main():
